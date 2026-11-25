@@ -1,0 +1,71 @@
+#!/bin/sh
+# Prime directive 16: no secret leaves this machine. The last gate before GitHub: TruffleHog
+# scans every commit this push would send - the files each one adds or changes, as that commit
+# has them, and its message - including any commit made with the pre-commit hook off.
+# It fails closed: without trufflehog, nothing is pushed. Never push with --no-verify.
+#
+# It hands TruffleHog the files themselves. TruffleHog's own git scan is not used: it stops
+# without a word at a file git converts before comparing - a .pdf, .docx or .rtf under Git for
+# Windows - and leaves the rest of that commit, and every older one, unread.
+#
+# A line that holds a deliberate fake, in a test or a fixture, ends with: trufflehog:ignore
+#
+# By hand, for the whole history of the branch that is checked out:  sh .githooks/pre-push --all
+
+fail() {
+  echo "pre-push: $1" >&2
+  exit 1
+}
+
+command -v trufflehog >/dev/null 2>&1 ||
+  fail "trufflehog is not installed, so nothing can be pushed. Install it - see docs/SECRETS.md."
+
+# A folder of its own inside the git directory: never in the working tree, and gone on exit.
+scan=$(git rev-parse --git-path "trufflehog-push.$$") || fail "could not find the git directory, so nothing was pushed."
+rm -rf "$scan"
+mkdir -p "$scan/files" || fail "could not make a folder to scan in, so nothing was pushed."
+trap 'rm -rf "$scan"' EXIT
+trap 'exit 1' HUP INT TERM
+
+# Writes out what each of the commits named on stdin brought in: its message, and every file it
+# added or changed against any of its parents, as the commit has it.
+take() {
+  while read -r commit; do
+    dir="$scan/files/$(printf '%.12s' "$commit")"
+    [ -d "$dir" ] && continue # two refs can share commits
+    mkdir -p "$dir" || return 1
+    git log -1 --format=%B "$commit" > "$dir.message" || return 1
+    GIT_INDEX_FILE="$scan/index" git read-tree "$commit" || return 1
+    git diff-tree -r -m --root --no-commit-id --name-only --diff-filter=ACMR -z "$commit" > "$scan/list" || return 1
+    GIT_INDEX_FILE="$scan/index" git checkout-index -f --prefix="$dir/" -z --stdin < "$scan/list" || return 1
+  done
+}
+
+zero=0000000000000000000000000000000000000000
+where="a commit this push would send. Nothing has left the machine"
+if [ "$1" = "--all" ]; then
+  where="the history of this branch"
+  git rev-list HEAD > "$scan/commits" || fail "could not list the history, so nothing was scanned."
+  take < "$scan/commits" || fail "could not read the history, so nothing was scanned."
+else
+  # git passes the remote's name, and one line per ref: <local ref> <local sha> <remote ref> <remote sha>
+  while read -r _ local_sha _ remote_sha; do
+    [ "$local_sha" = "$zero" ] && continue # a deleted branch sends nothing
+    if [ "$remote_sha" = "$zero" ] || ! git cat-file -e "$remote_sha" 2>/dev/null; then
+      # a new branch, or one this clone has not fetched: every commit that remote does not have
+      git rev-list "$local_sha" --not --remotes="$1" > "$scan/commits" || fail "could not list the commits of this push, so nothing was pushed."
+    else
+      git rev-list "$remote_sha..$local_sha" > "$scan/commits" || fail "could not list the commits of this push, so nothing was pushed."
+    fi
+    take < "$scan/commits" || fail "could not read the commits of this push, so nothing was pushed."
+  done
+fi
+
+# Findings go to stdout; the banner and the logs, to nowhere. 183 means it found something.
+# Each finding names its file as <first twelve characters of the commit>/<path>.
+trufflehog filesystem "$scan/files" --results=verified,unknown --fail --no-update 2>/dev/null
+case $? in
+  0) ;;
+  183) fail "TruffleHog found a secret in $where. Stop and tell the owner (docs/SECRETS.md)." ;;
+  *) fail "TruffleHog could not scan the commits, so nothing was pushed. To see why, run it on a copy of the files: trufflehog filesystem <folder> --fail" ;;
+esac

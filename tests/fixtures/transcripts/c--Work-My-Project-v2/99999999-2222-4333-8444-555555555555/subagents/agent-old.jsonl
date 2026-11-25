@@ -1,0 +1,1 @@
+{"parentUuid":"g1","isSidechain":true,"message":{"model":"claude-opus-5-5","id":"msg_g1","type":"message","role":"assistant","content":[{"type":"text","text":"An earlier task."}],"usage":{"input_tokens":1,"cache_creation_input_tokens":0,"cache_read_input_tokens":666665,"output_tokens":20}},"requestId":"req_g1","type":"assistant","uuid":"g2","timestamp":"2026-09-01T10:00:00.000Z"}

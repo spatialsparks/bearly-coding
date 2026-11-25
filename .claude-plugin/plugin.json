@@ -1,0 +1,11 @@
+{
+  "name": "bearly-coding",
+  "description": "Plan software as sprints on a board and build it with a small team of agents: one story by hand, or the whole board on autopilot. The workflow is written into each project, so a project carries everything it needs.",
+  "author": {
+    "name": "spatialsparks"
+  },
+  "homepage": "https://github.com/spatialsparks/bearly-coding",
+  "repository": "https://github.com/spatialsparks/bearly-coding",
+  "license": "MIT",
+  "keywords": ["workflow", "agents", "sprints", "planning", "board"]
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "inspector",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/inspector/serve.mjs", "--no-browser"],
+      "port": {{INSPECTOR_PORT}}
+    }
+  ]
+}

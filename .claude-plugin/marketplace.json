@@ -1,0 +1,14 @@
+{
+  "name": "bearly-coding",
+  "description": "The bearly-coding workflow for Claude Code: a board of sprints and stories, built by hand or on autopilot.",
+  "owner": {
+    "name": "spatialsparks"
+  },
+  "plugins": [
+    {
+      "name": "bearly-coding",
+      "source": "./",
+      "description": "Plan software as sprints on a board and build it with a small team of agents: one story by hand, or the whole board on autopilot."
+    }
+  ]
+}

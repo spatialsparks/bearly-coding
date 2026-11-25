@@ -1,0 +1,34 @@
+# Secrets. Nothing here ever reaches the repository; TruffleHog checks the rest.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+secrets/
+.netrc
+
+# Local machine settings
+.claude/settings.local.json
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Caches and logs
+.cache/
+__pycache__/
+.venv/
+node_modules/
+*.log
+
+# Blender and other tools' backups
+*.blend1
+*.blend2
+
+# What scripts regenerate. Remove this line if outputs/ holds work that cannot be regenerated.
+outputs/

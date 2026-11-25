@@ -1,0 +1,4 @@
+# Two planning sessions can each add a term or park an idea at the same time. Keeping both
+# sides' lines means their branches merge without a conflict (docs/PLANNING.md).
+docs/GLOSSARY.md merge=union
+docs/board/LATER.md merge=union

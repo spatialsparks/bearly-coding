@@ -1,0 +1,73 @@
+# ---------------------------------------------------------------------------
+# Secrets — prime directives 16 and 17. Nothing here ever reaches the repo.
+# A copy of every real secret lives in the vault named in docs/SECRETS.md.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+id_rsa*
+*service-account*.json
+*serviceaccount*.json
+*credentials*.json
+secrets/
+.secrets/
+.netrc
+.npmrc.local
+
+# Local machine settings, the agents' worktrees during a sprint, and skills brought along
+# from earlier projects for the skill writers to start from (docs/STACK_SKILLS.md)
+.claude/settings.local.json
+.claude/worktrees/
+.claude/skill-drafts/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build output and caches
+dist/
+build/
+out/
+.cache/
+coverage/
+*.log
+
+# ---------------------------------------------------------------------------
+# Stack-specific — delete the sections that do not apply
+# ---------------------------------------------------------------------------
+
+# Node
+node_modules/
+.pnpm-store/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# Rust / Go / JVM
+target/
+bin/
+*.class
+
+# Data and runtime artifacts — keep the directory, not its contents
+data/*
+!data/.gitkeep
+!data/CLAUDE.md

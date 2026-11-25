@@ -1,0 +1,43 @@
+#!/bin/sh
+# Prime directive 16: no secret reaches a commit. TruffleHog scans every file this commit adds
+# or changes, as it is staged, before the commit exists - so there is nothing to rewrite out of
+# the history afterwards. Set up by `git config core.hooksPath .githooks` (docs/SECRETS.md);
+# every worktree runs its own copy. It fails closed: without trufflehog, nothing is committed.
+# Never commit with --no-verify.
+#
+# It hands TruffleHog the files themselves, written out from the index git is committing from.
+# TruffleHog's own git scan is not used: it reads .git/index only, so it sees nothing of
+# `git commit -a` or `git commit <path>`, and it stops without a word at a file git converts
+# before comparing - a .pdf, .docx or .rtf under Git for Windows.
+#
+# A line that holds a deliberate fake, in a test or a fixture, ends with: trufflehog:ignore
+
+fail() {
+  echo "pre-commit: $1" >&2
+  exit 1
+}
+
+command -v trufflehog >/dev/null 2>&1 ||
+  fail "trufflehog is not installed, so nothing can be committed. Install it - see docs/SECRETS.md."
+
+# A folder of its own inside the git directory: never in the working tree, and gone on exit.
+scan=$(git rev-parse --git-path "trufflehog-commit.$$") || fail "could not find the git directory, so nothing was committed."
+rm -rf "$scan"
+mkdir -p "$scan/files" || fail "could not make a folder to scan in, so nothing was committed."
+trap 'rm -rf "$scan"' EXIT
+trap 'exit 1' HUP INT TERM
+
+# Added, copied, modified, renamed: everything the commit brings in. A deleted file holds
+# nothing. Both commands read the index git set up for this commit (GIT_INDEX_FILE).
+git diff --cached --name-only --diff-filter=ACMR -z > "$scan/list" ||
+  fail "could not list the staged files, so nothing was committed."
+git checkout-index -f --prefix="$scan/files/" -z --stdin < "$scan/list" ||
+  fail "could not read the staged files, so nothing was committed."
+
+# Findings go to stdout; the banner and the logs, to nowhere. 183 means it found something.
+trufflehog filesystem "$scan/files" --results=verified,unknown --fail --no-update 2>/dev/null
+case $? in
+  0) ;;
+  183) fail "TruffleHog found a secret in the staged files. Unstage it, move it to .env and the vault (docs/SECRETS.md), and commit again. If it is a deliberate fake, end its line with: trufflehog:ignore" ;;
+  *) fail "TruffleHog could not scan the staged files, so nothing was committed. To see why, run it on a copy of them: trufflehog filesystem <folder> --fail" ;;
+esac

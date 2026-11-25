@@ -1,0 +1,1 @@
+{"parentUuid":"f1","message":{"model":"claude-opus-5-5","id":"msg_f1","type":"message","role":"assistant","content":[{"type":"text","text":"An earlier sprint."}],"usage":{"input_tokens":1,"cache_creation_input_tokens":0,"cache_read_input_tokens":777776,"output_tokens":20}},"requestId":"req_f1","type":"assistant","uuid":"f2","timestamp":"2026-09-01T10:00:00.000Z"}

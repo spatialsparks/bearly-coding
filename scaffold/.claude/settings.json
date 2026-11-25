@@ -1,0 +1,83 @@
+{
+  "model": "opus",
+  "autoCompactWindow": 400000,
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0",
+    "CLAUDE_CODE_EFFORT_LEVEL": "high"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"The context of this session was just summarised. Do not go on from the summary. If you are the orchestrator of /autopilot, read .claude/skills/autopilot/SKILL.md again. If you are a sprint lead, read docs/ORCHESTRATION.md again and start from move 1. If you are building a story by hand, read .claude/skills/implement/SKILL.md again. The board and git are the record.\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Edit(*)",
+      "Write(*)",
+      "Bash(mkdir *)",
+      "Bash({{PACKAGE_MANAGER}} *)",
+      "PowerShell({{PACKAGE_MANAGER}} *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git push*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git switch*)",
+      "Bash(git fetch*)",
+      "Bash(git merge*)",
+      "Bash(git revert*)",
+      "Bash(git reset --merge*)",
+      "Bash(git cherry-pick*)",
+      "Bash(git mv*)",
+      "Bash(git rm*)",
+      "Bash(git restore*)",
+      "Bash(git show*)",
+      "Bash(git pull --ff-only*)",
+      "Bash(git worktree*)",
+      "Bash(git rev-parse*)",
+      "Bash(gh repo view*)",
+      "Bash(node tools/inspector/serve.mjs*)",
+      "PowerShell(node tools/inspector/serve.mjs*)",
+      "Bash(node tools/context-report.mjs*)",
+      "PowerShell(node tools/context-report.mjs*)",
+      "Bash({{DEPLOY_COMMAND}}*)",
+      "PowerShell({{DEPLOY_COMMAND}}*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Bash(gh repo create --public*)",
+      "Bash(gh repo edit*--visibility*)",
+      "Bash(gh pr merge*--admin*)",
+      "Bash(gh api*protection*)",
+      "Bash(git push -f*)",
+      "Bash(git commit*--no-verify*)",
+      "Bash(git commit*-n *)",
+      "Bash(git push*--no-verify*)",
+      "Bash(git push*--force*)",
+      "Bash(git reset --hard*)",
+      "Bash(rm -rf *)",
+      "PowerShell(gh pr merge*--admin*)",
+      "PowerShell(gh api*protection*)",
+      "PowerShell(git commit*--no-verify*)",
+      "PowerShell(git push*--no-verify*)",
+      "Bash(gh pr create*)",
+      "Bash(gh workflow*)",
+      "PowerShell(gh pr create*)",
+      "PowerShell(gh workflow*)",
+      "Edit(./.github/workflows/**)",
+      "PowerShell(git push*--force*)"
+    ]
+  }
+}
