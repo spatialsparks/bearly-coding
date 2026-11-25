@@ -1,16 +1,18 @@
 // The context report, run for real against a small fixture of transcripts: each line it prints,
 // and what it leaves out.
 //
-// The fixture's folder, c--Work-My-Project-v2, stands for C:\Work\My Project.v2, which is a path
-// on Windows only. So the rule that names a folder after a path is checked by itself, on paths of
+// The fixture's transcripts are those of a made-up project at C:\Work\My Project.v2, a path on
+// Windows only. So the rule that names a folder after a path is checked by itself, on paths of
 // either kind, and for the runs the fixture is copied to the folder of a temporary project on
-// the machine the test runs on.
+// the machine the test runs on. Its sessions have short ids, unlike real ones: the plugin is
+// checked out deep inside Claude Code's folder, and Windows refuses a path of more than 260
+// characters.
 
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, dirname, join } from 'node:path';
+import { dirname, join } from 'node:path';
 import test, { after } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
@@ -18,7 +20,7 @@ import { folderName, parseTime } from '../scaffold/tools/context-report.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const script = join(here, '..', 'scaffold', 'tools', 'context-report.mjs');
-const fixture = join(here, 'fixtures', 'transcripts', 'c--Work-My-Project-v2');
+const fixture = join(here, 'fixtures', 'transcripts');
 
 // Resolved, so that it is spelled as a process started in it reads its own directory: on macOS
 // the temporary folder is reached through a link.
@@ -45,7 +47,8 @@ function plant(from, to) {
       plant(source, target);
     } else {
       copyFileSync(source, target);
-      const written = source.includes('99999999-') ? new Date('2020-01-01T00:00:00Z') : now;
+      // Session 99999999 and its agents are the old ones.
+      const written = source.slice(fixture.length + 1).startsWith('99999999') ? new Date('2020-01-01T00:00:00Z') : now;
       utimesSync(target, written, written);
     }
   }
@@ -125,8 +128,8 @@ test('nothing written to since --since stops too', () => {
 
 test('a folder is named after its project as Claude Code names it, whatever the kind of path', () => {
   assert.equal(folderName('C:\\Work\\My Project.v2'), 'C--Work-My-Project-v2');
-  // The fixture's folder is that name, with its drive letter's case changed.
-  assert.equal(folderName('c:\\Work\\My Project.v2'), basename(fixture));
+  // The drive letter's case varies, and the name keeps it.
+  assert.equal(folderName('c:\\Work\\My Project.v2'), 'c--Work-My-Project-v2');
   assert.equal(folderName('C:\\'), 'C--');
   assert.equal(folderName('\\\\server\\share\\x_y'), '--server-share-x-y');
   assert.equal(folderName('/home/dev/My Project.v2'), '-home-dev-My-Project-v2');

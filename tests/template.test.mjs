@@ -738,3 +738,13 @@ test('nothing names one machine or one person: no absolute path, no home folder,
     assert.equal(hit?.[0], undefined, `${rel(file)} holds a path of one machine: "${text.slice(hit?.index, (hit?.index ?? 0) + 40)}"`);
   }
 });
+
+test('every path is short enough to be checked out on Windows deep inside Claude Code\'s folder', () => {
+  // Claude Code clones the plugin to <config>/plugins/marketplaces/<owner>-<repo> and copies it
+  // to <config>/plugins/cache/<marketplace>/<plugin>/<version>. On Windows that can take 175
+  // characters before the first file, and Git for Windows refuses a path of more than 260.
+  const tracked = spawnSync('git', ['ls-files', '-z'], { cwd: templates, encoding: 'utf8' }).stdout.split('\0').filter(Boolean);
+  const paths = tracked.length > 0 ? tracked : walk(templates).map(rel);
+  const long = paths.filter((path) => path.length > 80);
+  assert.deepEqual(long, [], 'paths of more than 80 characters');
+});
