@@ -23,7 +23,27 @@ interesting, and worked them into mine. The [credits](#licence-and-credits) name
 
 ## Install
 
-In any Claude Code session, in the terminal or the desktop app:
+**In the Claude desktop app:** open **Customize → Plugins**, choose **Add → Add marketplace**,
+enter `spatialsparks/bearly-coding`, and install **bearly-coding** from it. Then start a new
+session in the Code tab. It runs scripts on your computer, so use it in the Code tab, not in
+Chat.
+
+**In a terminal**, run this once:
+
+```sh
+claude plugin install bearly-coding --marketplace spatialsparks/bearly-coding
+```
+
+The plugin is then there in the terminal, the desktop app and VS Code; start a new session to
+pick it up. This needs Claude Code 2.1.292 or newer. On an older version, add the marketplace
+first:
+
+```sh
+claude plugin marketplace add spatialsparks/bearly-coding
+claude plugin install bearly-coding@bearly-coding
+```
+
+Or, inside a Claude Code session in the terminal:
 
 ```text
 /plugin marketplace add spatialsparks/bearly-coding

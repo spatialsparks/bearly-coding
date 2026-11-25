@@ -94,9 +94,15 @@ nav.links a:hover { color: var(--ink); }
 .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
 .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .btn:hover { transform: translateY(-1px); }
-.install { margin-top: 28px; background: #0f1a17; color: #dfe9e4; border-radius: 12px; border: 1px solid #22332d; display: flex; align-items: flex-start; gap: 10px; padding: 12px 12px 12px 16px; max-width: 520px; }
-.install pre { margin: 0; flex: 1; min-width: 0; font-size: .74rem; line-height: 1.8; white-space: pre; overflow-x: auto; scrollbar-width: none; }
+.itabs { display: flex; gap: 4px; margin-top: 28px; }
+.itabs button { border: 0; background: none; padding: 5px 12px; border-radius: 8px 8px 0 0; font-size: .85rem; color: var(--muted); }
+.itabs button[aria-selected="true"] { background: #0f1a17; color: #dfe9e4; font-weight: 600; }
+.install[hidden] { display: none; }
+.itabs + .install { border-top-left-radius: 0; }
+.install { margin-top: 0; background: #0f1a17; color: #dfe9e4; border-radius: 12px; border: 1px solid #22332d; display: flex; align-items: flex-start; gap: 10px; padding: 12px 12px 12px 16px; max-width: 520px; }
+.install pre { margin: 0; flex: 1; min-width: 0; font-size: .8rem; line-height: 1.8; white-space: pre-wrap; }
 .install .p { color: #f0b62e; }
+.install .nw { white-space: nowrap; }
 .install button { background: #22332d; border: 0; color: #cfe0d8; font-size: .78rem; padding: 4px 10px; border-radius: 6px; flex: none; }
 .install-note { color: var(--muted); font-size: .85rem; margin-top: 8px; }
 .peek { position: relative; padding-top: 34px; }
@@ -283,12 +289,21 @@ footer .wrap { display: grid; gap: 8px; }
     <div>
       <h1>Plan it as sprints.<br>Build it <em>by hand</em> or <em>on autopilot</em>.</h1>
       <p class="lede">A plugin for Claude Code. Your project gets a board of sprints and stories, and a small team of agents that builds them. Nothing is pushed until it has been reviewed.</p>
-      <div class="install">
-<pre><span class="p">&gt;</span> /plugin marketplace add spatialsparks/bearly-coding
-<span class="p">&gt;</span> /plugin install bearly-coding@bearly-coding</pre>
-        <button type="button" id="copy">Copy</button>
+      <div class="itabs" role="tablist" aria-label="Where you install it">
+        <button type="button" role="tab" aria-selected="true" data-i="desktop">Desktop app</button>
+        <button type="button" role="tab" aria-selected="false" data-i="terminal">Terminal</button>
       </div>
-      <p class="install-note">Needs git, Node 20 or newer, and TruffleHog.</p>
+      <div class="install" data-i="desktop">
+<pre><span class="p">1</span> Customize → Plugins → Add → Add marketplace
+<span class="p">2</span> Enter <span class="nw">spatialsparks/bearly-coding</span>
+<span class="p">3</span> Install bearly-coding, then start a new session in the Code tab</pre>
+        <button type="button" class="copy" data-copy="spatialsparks/bearly-coding">Copy</button>
+      </div>
+      <div class="install" data-i="terminal" hidden>
+<pre><span class="p">$</span> claude plugin install <span class="nw">bearly-coding</span> <span class="nw">--marketplace spatialsparks/bearly-coding</span></pre>
+        <button type="button" class="copy" data-copy="claude plugin install bearly-coding --marketplace spatialsparks/bearly-coding">Copy</button>
+      </div>
+      <p class="install-note">Needs git, Node 20 or newer, and TruffleHog. <a href="https://github.com/spatialsparks/bearly-coding#install">More ways to install</a></p>
       <div class="cta">
         <a class="btn primary" href="#watch">Try the simulator</a>
         <a class="btn" href="https://github.com/spatialsparks/bearly-coding">GitHub</a>
@@ -501,12 +516,15 @@ footer .wrap { display: grid; gap: 8px; }
     try { localStorage.setItem('theme', next); } catch (e) {}
   });
 
-  $('#copy').addEventListener('click', async (e) => {
-    const text = '/plugin marketplace add spatialsparks/bearly-coding\n/plugin install bearly-coding@bearly-coding';
-    try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied'; }
-    catch { e.target.textContent = 'Select and copy'; }
-    setTimeout(() => (e.target.textContent = 'Copy'), 1800);
-  });
+  $$('.copy').forEach((b) => b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; }
+    catch { b.textContent = 'Select and copy'; }
+    setTimeout(() => (b.textContent = 'Copy'), 1800);
+  }));
+  $$('.itabs button').forEach((t) => t.addEventListener('click', () => {
+    $$('.itabs button').forEach((x) => x.setAttribute('aria-selected', String(x === t)));
+    $$('.install').forEach((box) => { box.hidden = box.dataset.i !== t.dataset.i; });
+  }));
 
   // Getting started
   const steps = [
