@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 232" role="img" aria-labelledby="flow-title flow-desc">
+  <title id="flow-title">From an idea to a first sprint</title>
+  <desc id="flow-desc">Four steps, each typed in a fresh session: /bearly-coding:new writes the project folder, /ideate thinks the idea through, /kickoff sets up the repository, skills, skeleton and board. Then you build: /implement one story by hand, or /autopilot the whole board by itself.</desc>
+  <style>
+    svg {
+      --bg: #f0f4f1; --card: #ffffff; --ink: #12221e; --muted: #51645d;
+      --line: #cfd9d4; --honey: #b87f00; --wash: #fbefcc;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      svg {
+        --bg: #0e1816; --card: #17241f; --ink: #e5eee9; --muted: #9bafa7;
+        --line: #2b3c36; --honey: #f0b62e; --wash: #3a2f10;
+      }
+    }
+    .bg { fill: var(--bg); }
+    .box { fill: var(--card); stroke: var(--line); }
+    .glow { fill: none; stroke: var(--honey); stroke-width: 2; opacity: 0; }
+    .num { fill: var(--honey); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+    .cmd { fill: var(--ink); font: 600 14px ui-monospace, "Cascadia Mono", Consolas, monospace; }
+    .txt { fill: var(--muted); font-size: 12px; }
+    .arrow { stroke: var(--line); stroke-width: 2; fill: none; }
+    .tip { fill: var(--line); }
+    .foot { fill: var(--muted); font-size: 12px; }
+
+    /* One loop is 12 seconds: each step lights up in turn, then both ways to build. */
+    .glow { animation: 12s linear infinite; }
+    #g1 { animation-name: g1; } #g2 { animation-name: g2; } #g3 { animation-name: g3; }
+    #g4, #g5 { animation-name: g4; }
+    @keyframes g1 { 0%, 20% { opacity: 1; } 23%, 100% { opacity: 0; } }
+    @keyframes g2 { 0%, 22% { opacity: 0; } 25%, 45% { opacity: 1; } 48%, 100% { opacity: 0; } }
+    @keyframes g3 { 0%, 47% { opacity: 0; } 50%, 70% { opacity: 1; } 73%, 100% { opacity: 0; } }
+    @keyframes g4 { 0%, 72% { opacity: 0; } 75%, 97% { opacity: 1; } 100% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .glow { animation: none; } }
+  </style>
+
+  <rect class="bg" width="880" height="232" rx="12"/>
+
+  <rect class="box" x="16" y="62" width="188" height="100" rx="8"/>
+  <rect class="glow" id="g1" x="16" y="62" width="188" height="100" rx="8"/>
+  <text class="num" x="30" y="86">1 · ONCE</text>
+  <text class="cmd" x="30" y="110">/bearly-coding:new</text>
+  <text class="txt" x="30" y="132">Writes the workflow into</text>
+  <text class="txt" x="30" y="148">a new project folder</text>
+
+  <rect class="box" x="236" y="62" width="188" height="100" rx="8"/>
+  <rect class="glow" id="g2" x="236" y="62" width="188" height="100" rx="8"/>
+  <text class="num" x="250" y="86">2 · THINK</text>
+  <text class="cmd" x="250" y="110">/ideate</text>
+  <text class="txt" x="250" y="132">Interviews you in rounds,</text>
+  <text class="txt" x="250" y="148">no code yet</text>
+
+  <rect class="box" x="456" y="62" width="188" height="100" rx="8"/>
+  <rect class="glow" id="g3" x="456" y="62" width="188" height="100" rx="8"/>
+  <text class="num" x="470" y="86">3 · SET UP</text>
+  <text class="cmd" x="470" y="110">/kickoff</text>
+  <text class="txt" x="470" y="132">Repository, stack skills,</text>
+  <text class="txt" x="470" y="148">skeleton and the board</text>
+
+  <rect class="box" x="676" y="20" width="188" height="86" rx="8"/>
+  <rect class="glow" id="g4" x="676" y="20" width="188" height="86" rx="8"/>
+  <text class="num" x="690" y="44">4 · BY HAND</text>
+  <text class="cmd" x="690" y="68">/implement</text>
+  <text class="txt" x="690" y="90">One story. You commit</text>
+
+  <rect class="box" x="676" y="118" width="188" height="86" rx="8"/>
+  <rect class="glow" id="g5" x="676" y="118" width="188" height="86" rx="8"/>
+  <text class="num" x="690" y="142">4 · OR BY ITSELF</text>
+  <text class="cmd" x="690" y="166">/autopilot</text>
+  <text class="txt" x="690" y="188">The whole board, reviewed</text>
+
+  <path class="arrow" d="M206 112 H226"/>
+  <path class="tip" d="M234 112 l-9 -5 v10 z"/>
+  <path class="arrow" d="M426 112 H446"/>
+  <path class="tip" d="M454 112 l-9 -5 v10 z"/>
+  <path class="arrow" d="M646 112 H656 V63 H666 M656 112 V161 H666"/>
+  <path class="tip" d="M674 63 l-9 -5 v10 z"/>
+  <path class="tip" d="M674 161 l-9 -5 v10 z"/>
+
+  <text class="foot" x="16" y="36">Each step starts in a fresh session.</text>
+  <text class="foot" x="16" y="190">Unsure what is next? /standup says.</text>
+</svg>

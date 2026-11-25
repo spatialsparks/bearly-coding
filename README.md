@@ -8,6 +8,19 @@ pushed before it has been reviewed.
 
 ![One sprint on autopilot: five stories cross the board in two waves, then the sprint is reviewed and lands.](docs/board.svg)
 
+**[See it in motion →](https://spatialsparks.github.io/bearly-coding/)** Step through a sprint
+on autopilot, watch what happens when a story needs you, and browse every command.
+
+## Why it exists
+
+I built bearly-coding to help me with my own work. It is the workflow I have coded a variety of
+different apps with, and it grew with each of them before it became a plugin of its own.
+
+There are great libraries of agent skills already, and
+[Matt Pocock's skills](https://github.com/mattpocock/skills) are among the best. They did not
+fit my style, though. So I kept my own workflow, took the concepts of his that I found most
+interesting, and worked them into mine. The [credits](#licence-and-credits) name each one.
+
 ## Install
 
 In any Claude Code session, in the terminal or the desktop app:
@@ -22,6 +35,8 @@ You also need git, [Node](https://nodejs.org) 20 or newer, and
 secrets.
 
 ## From an idea to a first sprint
+
+![Four steps, each in a fresh session: /bearly-coding:new, /ideate, /kickoff, then /implement by hand or /autopilot by itself.](docs/flow.svg)
 
 | | You type | What happens |
 | --- | --- | --- |
@@ -112,11 +127,22 @@ reads a site and before a skill is written, so you see every skill before it is 
 
 ## More
 
+- [The bearly-coding page](https://spatialsparks.github.io/bearly-coding/): the workflow to
+  click through, with a sprint you can step through.
 - [How it works](docs/how-it-works.md): the board, the agents, a sprint move by move, and why
   each rule is there.
 - [What a new project starts with](scaffold/): every file is plain Markdown or a small script,
   and yours to change once it is in your project.
 - [Changelog](CHANGELOG.md).
+
+## Contributing
+
+Bug reports and ideas are welcome as
+[issues](https://github.com/spatialsparks/bearly-coding/issues). Pull requests are open only to
+collaborators I invite: this is the workflow I build my own apps with, and I keep it in one
+voice. If you would like to help with something, open an issue first.
+
+A security problem goes through private reporting, never an issue: see [SECURITY.md](SECURITY.md).
 
 ## Working on the template
 

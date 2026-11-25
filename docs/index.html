@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bearly-coding</title>
+<meta name="description" content="A plugin for Claude Code: plan software as sprints on a board, and build it with a small team of agents, one story by hand or the whole board on autopilot.">
+<meta property="og:title" content="bearly-coding">
+<meta property="og:description" content="Plan it as sprints. Build it by hand or on autopilot. A plugin for Claude Code.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l12 7v14l-12 7-12-7V9z' fill='%23e0a21a'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f4f7f5; --bg2: #e9efec; --card: #ffffff; --ink: #12221e; --muted: #51645d;
+  --line: #cfd9d4; --honey: #b87f00; --honey-wash: #fbefcc; --blue: #2a69ad; --blue-wash: #e3eefa;
+  --green: #27775a; --green-wash: #dff1e8; --red: #b3402e; --red-wash: #fbe3de;
+  --shadow: 0 1px 2px rgba(18,34,30,.06), 0 4px 16px rgba(18,34,30,.06);
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1412; --bg2: #111d1a; --card: #17241f; --ink: #e5eee9; --muted: #9bafa7;
+    --line: #2b3c36; --honey: #f0b62e; --honey-wash: #3a2f10; --blue: #76aeea; --blue-wash: #15283b;
+    --green: #62c39a; --green-wash: #133026; --red: #ef8a78; --red-wash: #3b1a14;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1412; --bg2: #111d1a; --card: #17241f; --ink: #e5eee9; --muted: #9bafa7;
+  --line: #2b3c36; --honey: #f0b62e; --honey-wash: #3a2f10; --blue: #76aeea; --blue-wash: #15283b;
+  --green: #62c39a; --green-wash: #133026; --red: #ef8a78; --red-wash: #3b1a14;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--blue); }
+code, kbd, pre { font-family: var(--mono); }
+code { font-size: .92em; background: var(--bg2); padding: .1em .35em; border-radius: 5px; }
+h1, h2, h3 { line-height: 1.2; margin: 0; }
+h2 { font-size: clamp(1.6rem, 3.2vw, 2.2rem); letter-spacing: -.01em; }
+h3 { font-size: 1.1rem; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 720px) { .wrap { padding: 0 28px; } }
+section { padding: 72px 0; }
+section + section { border-top: 1px solid var(--line); }
+.kicker { color: var(--honey); font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; }
+.lede { color: var(--muted); font-size: 1.08rem; max-width: 68ch; margin-top: 14px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Header */
+header.top {
+  position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--bg) 82%, transparent); border-bottom: 1px solid var(--line);
+}
+header.top .wrap { display: flex; align-items: center; gap: 18px; height: 58px; }
+.brand { display: flex; align-items: center; gap: 9px; font-weight: 750; color: var(--ink); text-decoration: none; }
+.brand svg { width: 22px; height: 22px; }
+nav.links { display: flex; gap: 18px; margin-left: auto; font-size: .92rem; }
+nav.links a { color: var(--muted); text-decoration: none; }
+nav.links a:hover { color: var(--ink); }
+@media (max-width: 760px) { nav.links .hide-sm { display: none; } }
+.icon-btn { background: none; border: 1px solid var(--line); border-radius: 8px; width: 34px; height: 34px; display: grid; place-items: center; color: var(--muted); }
+.icon-btn:hover { color: var(--ink); border-color: var(--muted); }
+.icon-btn svg { width: 17px; height: 17px; }
+
+/* Hero */
+.hero { padding: 84px 0 64px; }
+.hero-grid { display: grid; gap: 40px; align-items: center; }
+@media (min-width: 920px) { .hero-grid { grid-template-columns: 1.05fr 1fr; } }
+.hero h1 { font-size: clamp(2.2rem, 5.4vw, 3.6rem); letter-spacing: -.025em; font-weight: 800; }
+.hero h1 em { font-style: normal; color: var(--honey); }
+.hero .lede { font-size: 1.15rem; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn:hover { transform: translateY(-1px); }
+.promises { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 28px; color: var(--muted); font-size: .9rem; }
+.promises span::before { content: "✓ "; color: var(--green); font-weight: 700; }
+
+.term { background: #0f1a17; color: #dfe9e4; border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; border: 1px solid #22332d; }
+.term-bar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: #15231f; border-bottom: 1px solid #22332d; }
+.term-bar i { width: 10px; height: 10px; border-radius: 50%; background: #2f453e; display: block; }
+.term-bar b { margin-left: 8px; font-weight: 500; font-size: .8rem; color: #8fa69d; }
+.term-bar button { margin-left: auto; background: #22332d; border: 0; color: #cfe0d8; font-size: .78rem; padding: 4px 10px; border-radius: 6px; }
+.term pre { margin: 0; padding: 18px 18px 20px; font-size: .86rem; line-height: 1.75; white-space: pre-wrap; word-break: break-word; }
+.term .c { color: #7f978e; }
+.term .p { color: #f0b62e; }
+.term .ok { color: #62c39a; }
+.term .hl { color: #9ccaf5; }
+
+/* Why */
+.why { display: grid; gap: 28px; }
+@media (min-width: 860px) { .why { grid-template-columns: 1fr 1.3fr; align-items: start; } }
+.why blockquote { margin: 0; padding: 22px 24px; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--honey); border-radius: 12px; box-shadow: var(--shadow); }
+.why blockquote p + p { margin-top: 12px; }
+
+/* Steps */
+.steps { display: grid; gap: 22px; margin-top: 36px; }
+@media (min-width: 900px) { .steps { grid-template-columns: 300px 1fr; } }
+.step-tabs { display: grid; gap: 8px; align-content: start; }
+.step-tab { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 30px 1fr; gap: 2px 10px; }
+.step-tab .n { grid-row: span 2; width: 30px; height: 30px; border-radius: 50%; background: var(--bg2); color: var(--muted); display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+.step-tab code { background: none; padding: 0; font-weight: 600; font-size: .9rem; }
+.step-tab small { color: var(--muted); font-size: .84rem; }
+.step-tab[aria-selected="true"] { border-color: var(--honey); box-shadow: 0 0 0 1px var(--honey) inset, var(--shadow); }
+.step-tab[aria-selected="true"] .n { background: var(--honey); color: #fff; }
+.step-panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 24px; box-shadow: var(--shadow); display: grid; gap: 18px; align-content: start; }
+.step-panel h3 { font-size: 1.3rem; }
+.step-panel p { color: var(--muted); }
+.step-panel .term pre { font-size: .8rem; }
+.note { font-size: .8rem; color: var(--muted); }
+
+/* Simulator */
+.sim { margin-top: 32px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+.sim-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.sim-head .title { font-weight: 700; }
+.sim-head .title span { font-family: var(--mono); color: var(--muted); font-weight: 600; margin-right: 8px; }
+.seg { display: inline-flex; background: var(--bg2); border-radius: 9px; padding: 3px; margin-left: auto; }
+.seg button { border: 0; background: none; padding: 6px 12px; border-radius: 7px; font-size: .85rem; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: var(--shadow); font-weight: 600; }
+.board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 16px; background: var(--bg); }
+@media (max-width: 760px) { .board { grid-template-columns: repeat(2, 1fr); } }
+.lane { background: var(--bg2); border-radius: 10px; padding: 10px; min-height: 250px; display: flex; flex-direction: column; gap: 8px; }
+@media (max-width: 760px) { .lane { min-height: 150px; } }
+.lane h4 { margin: 0 0 2px; font-size: .7rem; letter-spacing: .1em; color: var(--muted); display: flex; justify-content: space-between; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: .82rem; line-height: 1.35; will-change: transform; }
+.card .id { font: 600 .76rem var(--mono); display: flex; align-items: center; gap: 6px; }
+.card .id::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--dot, var(--muted)); }
+.card .t { margin-top: 3px; }
+.card .b { display: inline-block; margin-top: 6px; font-size: .7rem; font-weight: 600; padding: 1px 7px; border-radius: 99px; background: var(--bg2); color: var(--muted); }
+.card.prog { --dot: var(--blue); } .card.prog .b { background: var(--blue-wash); color: var(--blue); }
+.card.rev { --dot: var(--honey); } .card.rev .b { background: var(--honey-wash); color: var(--honey); }
+.card.done { --dot: var(--green); } .card.done .b { background: var(--green-wash); color: var(--green); }
+.card.ready .b { background: var(--green-wash); color: var(--green); }
+.card.blocked { border-color: var(--red); --dot: var(--red); } .card.blocked .b { background: var(--red-wash); color: var(--red); }
+.card.fix { border-style: dashed; }
+
+.sim-body { display: grid; gap: 0; }
+@media (min-width: 920px) { .sim-body { grid-template-columns: 1.4fr 1fr; } }
+.narr { padding: 18px 20px; border-top: 1px solid var(--line); min-height: 150px; }
+.narr .k { font-size: .72rem; font-weight: 700; letter-spacing: .1em; color: var(--honey); text-transform: uppercase; }
+.narr h3 { margin: 4px 0 6px; font-size: 1.08rem; }
+.narr p { color: var(--muted); font-size: .95rem; }
+.agents { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.agent { font-size: .74rem; padding: 3px 9px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); opacity: .45; transition: all .3s; }
+.agent.on { opacity: 1; color: var(--ink); border-color: var(--blue); background: var(--blue-wash); }
+.agent.you.on { border-color: var(--honey); background: var(--honey-wash); }
+.side { border-top: 1px solid var(--line); padding: 18px 20px; display: grid; gap: 16px; align-content: start; font-size: .84rem; }
+@media (min-width: 920px) { .side { border-left: 1px solid var(--line); } }
+.side h4 { margin: 0 0 6px; font-size: .7rem; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+.side ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.side li { font-family: var(--mono); font-size: .76rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.side li.empty { font-family: inherit; color: var(--muted); font-style: italic; }
+.side li .s { color: var(--muted); }
+.branch { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: .78rem; padding: 3px 9px; border-radius: 6px; background: var(--bg2); }
+.branch.landed { background: var(--green-wash); color: var(--green); }
+.branch.held { background: var(--red-wash); color: var(--red); }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); background: var(--bg); }
+.controls button.c { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 6px 12px; font-size: .85rem; }
+.controls button.c.main { background: var(--ink); color: var(--bg); border-color: var(--ink); min-width: 84px; }
+.controls button.c:disabled { opacity: .4; cursor: default; }
+.dots { display: flex; gap: 5px; margin-left: auto; }
+.dots button { width: 9px; height: 9px; border-radius: 50%; border: 0; padding: 0; background: var(--line); }
+.dots button[aria-current="step"] { background: var(--honey); transform: scale(1.3); }
+
+/* Two ways */
+.ways { display: grid; gap: 20px; margin-top: 36px; }
+@media (min-width: 860px) { .ways { grid-template-columns: 1fr 1fr; } }
+.way { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); display: grid; gap: 14px; align-content: start; }
+.way .tag { font-size: .75rem; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.way h3 { font: 700 1.35rem var(--mono); }
+.way ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; }
+.tree { display: grid; gap: 6px; font-size: .82rem; padding: 14px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+.tree .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.tree .row.i1 { padding-left: 18px; } .tree .row.i2 { padding-left: 36px; }
+.tree .row::before { content: "└"; color: var(--line); font-family: var(--mono); }
+.tree .row.i0::before { content: none; }
+.node { padding: 3px 9px; border-radius: 7px; background: var(--card); border: 1px solid var(--line); animation: pulse 6s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.node.you { border-color: var(--honey); background: var(--honey-wash); }
+.tree .s { color: var(--muted); font-size: .78rem; }
+@keyframes pulse { 0%, 70%, 100% { box-shadow: none; } 80% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 35%, transparent); } }
+
+/* Words */
+.words { display: grid; gap: 20px; margin-top: 36px; }
+@media (min-width: 900px) { .words { grid-template-columns: 1fr 1.1fr; } }
+.word-list { display: grid; gap: 10px; }
+.word { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.word b { font-size: 1.1rem; } .word code { margin-left: 8px; }
+.word p { color: var(--muted); font-size: .92rem; margin-top: 4px; }
+.word.on { border-color: var(--honey); box-shadow: 0 0 0 1px var(--honey) inset; }
+.files { background: #0f1a17; color: #cfe0d8; border-radius: 14px; padding: 18px; font: .82rem/1.9 var(--mono); overflow-x: auto; border: 1px solid #22332d; }
+.files div { white-space: pre; border-radius: 5px; padding: 0 6px; transition: background .25s, color .25s; }
+.files .dim { color: #7f978e; }
+.files div.lit { background: #3a2f10; color: #f6cf73; }
+
+/* Inputs */
+.inputs { display: grid; gap: 12px; margin-top: 32px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
+.input { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 6px; align-content: start; min-height: 150px; }
+.input .ic { font-size: 1.3rem; }
+.input b { font-size: 1rem; }
+.input .eg { color: var(--muted); font-size: .88rem; }
+.input .ans { display: none; font-size: .88rem; border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 4px; }
+.input .ans b { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--honey); display: block; }
+.input[aria-expanded="true"] { border-color: var(--honey); }
+.input[aria-expanded="true"] .ans { display: block; }
+.input .more { font-size: .78rem; color: var(--blue); }
+.input[aria-expanded="true"] .more { display: none; }
+.input.stop { border-color: color-mix(in srgb, var(--red) 50%, var(--line)); }
+
+/* Skills */
+.skills { display: grid; gap: 14px; margin-top: 32px; }
+@media (min-width: 860px) { .skills { grid-template-columns: repeat(5, 1fr); } }
+.skill { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
+.skill .part { font-weight: 700; }
+.skill .src { color: var(--muted); font-size: .82rem; }
+.skill .out { font: .76rem var(--mono); color: var(--green); background: var(--green-wash); padding: 3px 8px; border-radius: 6px; justify-self: start; }
+
+/* Commands */
+.cmd-tools { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { border: 1px solid var(--line); background: var(--card); padding: 5px 12px; border-radius: 99px; font-size: .85rem; color: var(--muted); }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.cmd-tools input { margin-left: auto; padding: 7px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-size: .9rem; min-width: 0; width: 220px; max-width: 100%; }
+.cmds { display: grid; gap: 10px; margin-top: 18px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.cmd { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; }
+.cmd code { background: none; padding: 0; font-weight: 700; font-size: .95rem; }
+.cmd span { color: var(--muted); font-size: .9rem; }
+.cmd small { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--honey); }
+.cmd[hidden] { display: none; }
+
+/* Principles */
+.principles { display: grid; gap: 14px; margin-top: 32px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); }
+.pr { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 8px; align-content: start; }
+.pr svg { width: 26px; height: 26px; color: var(--honey); }
+.pr p { color: var(--muted); font-size: .9rem; }
+
+footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: .9rem; }
+footer .wrap { display: grid; gap: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+<script>
+  try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l12 7v14l-12 7-12-7V9z" fill="var(--honey)"/><path d="M16 9l6 3.5v7L16 23l-6-3.5v-7z" fill="var(--bg)" opacity=".55"/></svg>
+      bearly-coding
+    </a>
+    <nav class="links" aria-label="Sections">
+      <a class="hide-sm" href="#start">Start</a>
+      <a href="#watch">Watch a sprint</a>
+      <a class="hide-sm" href="#commands">Commands</a>
+      <a href="https://github.com/spatialsparks/bearly-coding">GitHub</a>
+    </nav>
+    <button class="icon-btn" id="theme" type="button" aria-label="Switch between light and dark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="kicker">A plugin for Claude Code</div>
+      <h1>Plan it as sprints.<br>Build it <em>by hand</em> or <em>on autopilot</em>.</h1>
+      <p class="lede">bearly-coding gives a project a board of sprints and stories, a small team of agents that builds them, and skills written for the stack you chose. Nothing is pushed before it has been reviewed.</p>
+      <div class="cta">
+        <a class="btn primary" href="#watch">Watch a sprint ↓</a>
+        <a class="btn" href="https://github.com/spatialsparks/bearly-coding">View on GitHub</a>
+      </div>
+      <div class="promises">
+        <span>Private by default</span><span>Secrets stay out of git</span><span>Reviewed before it leaves</span><span>Every check runs locally</span>
+      </div>
+    </div>
+    <div class="term" aria-label="Install">
+      <div class="term-bar"><i></i><i></i><i></i><b>Claude Code</b><button type="button" id="copy">Copy</button></div>
+<pre id="install"><span class="c"># in any Claude Code session, terminal or desktop app</span>
+<span class="p">&gt;</span> /plugin marketplace add spatialsparks/bearly-coding
+<span class="p">&gt;</span> /plugin install bearly-coding@bearly-coding
+
+<span class="c"># then start something new</span>
+<span class="p">&gt;</span> /bearly-coding:new my-thing
+
+<span class="c"># needs git, Node 20+ and TruffleHog</span></pre>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap why">
+    <div>
+      <div class="kicker">Why it exists</div>
+      <h2>Built for my own work first.</h2>
+    </div>
+    <blockquote>
+      <p>I built bearly-coding to help me with my own work. It is the workflow I have coded a variety of different apps with, and it grew with each of them before it became a plugin of its own.</p>
+      <p>There are great libraries of agent skills already, and <a href="https://github.com/mattpocock/skills">Matt Pocock's skills</a> are among the best. They did not fit my style, though. So I kept my own workflow, took the concepts of his that I found most interesting, and worked them into mine.</p>
+    </blockquote>
+  </div>
+</section>
+
+<section id="start">
+  <div class="wrap">
+    <div class="kicker">From an idea to a first sprint</div>
+    <h2>Four commands, each in a fresh session.</h2>
+    <p class="lede">The project carries everything it needs: the commands, the agents, the board, the documents and the git hooks are written into it, and yours to change. When you are unsure what comes next, <code>/standup</code> says.</p>
+    <div class="steps">
+      <div class="step-tabs" role="tablist" aria-label="Steps">
+        <button class="step-tab" role="tab" aria-selected="true" aria-controls="step-panel" data-step="0"><span class="n">1</span><code>/bearly-coding:new</code><small>Writes the project folder</small></button>
+        <button class="step-tab" role="tab" aria-selected="false" aria-controls="step-panel" data-step="1"><span class="n">2</span><code>/ideate</code><small>Thinks the idea through with you</small></button>
+        <button class="step-tab" role="tab" aria-selected="false" aria-controls="step-panel" data-step="2"><span class="n">3</span><code>/kickoff</code><small>Repository, skills, skeleton, board</small></button>
+        <button class="step-tab" role="tab" aria-selected="false" aria-controls="step-panel" data-step="3"><span class="n">4</span><code>/implement</code> or <code>/autopilot</code><small>Build</small></button>
+      </div>
+      <div class="step-panel" id="step-panel" role="tabpanel" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section id="watch">
+  <div class="wrap">
+    <div class="kicker">Watch a sprint on autopilot</div>
+    <h2>Five stories, two waves, one review, then it lands.</h2>
+    <p class="lede">A sprint is one outcome you asked for. A sprint lead builds it in waves: the ready stories that are provably independent, one implementer each, in its own git worktree. Step through it, or switch to the run where a story needs you.</p>
+
+    <div class="sim" id="sim">
+      <div class="sim-head">
+        <div class="title"><span>S-012</span>Share links</div>
+        <div class="seg" role="group" aria-label="Scenario">
+          <button type="button" data-scn="clean" aria-pressed="true">A clean run</button>
+          <button type="button" data-scn="needs" aria-pressed="false">A story needs you</button>
+        </div>
+      </div>
+      <div class="board">
+        <div class="lane" data-col="w"><h4><span>WAITING</span><span class="count"></span></h4></div>
+        <div class="lane" data-col="p"><h4><span>IN PROGRESS</span><span class="count"></span></h4></div>
+        <div class="lane" data-col="r"><h4><span>IN REVIEW</span><span class="count"></span></h4></div>
+        <div class="lane" data-col="d"><h4><span>DONE</span><span class="count"></span></h4></div>
+      </div>
+      <div class="sim-body">
+        <div class="narr">
+          <div class="k" id="n-k"></div>
+          <h3 id="n-h"></h3>
+          <p id="n-p" aria-live="polite"></p>
+          <div class="agents" id="agents"></div>
+        </div>
+        <div class="side">
+          <div><h4>Branch</h4><span class="branch" id="branch"></span></div>
+          <div><h4>Commits on the sprint's branch</h4><ul id="commits"></ul></div>
+          <div><h4>Waiting on you · docs/board/inputs/</h4><ul id="inputs"></ul></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button type="button" class="c" id="back" aria-label="Previous step">← Back</button>
+        <button type="button" class="c main" id="play">▶ Play</button>
+        <button type="button" class="c" id="next" aria-label="Next step">Next →</button>
+        <button type="button" class="c" id="reset">Reset</button>
+        <div class="dots" id="dots" aria-label="Steps"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ways">
+  <div class="wrap">
+    <div class="kicker">Two ways to build, and no mode to set</div>
+    <h2>The command you type says what happens.</h2>
+    <p class="lede">The plain name is the careful one. The two never run at once: <code>/implement</code> stops while a wave is being built, and <code>/autopilot</code> stops when your working tree holds uncommitted changes.</p>
+    <div class="ways">
+      <div class="way">
+        <div class="tag">By hand</div>
+        <h3>/implement</h3>
+        <div class="tree" aria-label="Who works in /implement">
+          <div class="row i0"><span class="node you">You</span><span class="s">pick a story, read the diff, commit</span></div>
+          <div class="row i1"><span class="node" style="--d:1s">This session</span><span class="s">test first, in your checkout</span></div>
+        </div>
+        <ul>
+          <li>Builds one story, test first, inside its owned paths, both verifies green.</li>
+          <li>Stops and asks before a new dependency, a changed contract, or a choice between two designs.</li>
+          <li>Changes nothing in git: you read the diff, you commit, you push.</li>
+          <li>Given a whole sprint, it still builds one story at a time and waits for your word.</li>
+        </ul>
+      </div>
+      <div class="way">
+        <div class="tag">By itself, for days if need be</div>
+        <h3>/autopilot</h3>
+        <div class="tree" aria-label="Who works in /autopilot">
+          <div class="row i0"><span class="node you">Your session</span><span class="s">the orchestrator: builds nothing, keeps a few lines per sprint</span></div>
+          <div class="row i1"><span class="node" style="--d:.8s">Sprint lead</span><span class="s">a fresh context for every sprint</span></div>
+          <div class="row i2"><span class="node" style="--d:1.6s">Implementers</span><span class="s">one per story, each in its own worktree</span></div>
+          <div class="row i2"><span class="node" style="--d:2.4s">Verifier</span><span class="s">once per wave</span></div>
+          <div class="row i2"><span class="node" style="--d:3.2s">Two reviewers</span><span class="s">spec and standards, once per sprint</span></div>
+        </div>
+        <ul>
+          <li>Never stops to ask: what needs you becomes a file, and everything that does not depend on it goes on.</li>
+          <li>A sprint is merged into <code>main</code>, pushed and deployed only after both reviewers have read it whole.</li>
+          <li>Stops at once only where going on could do harm: a secret, or anything that would become public.</li>
+          <li>To turn it off, stop the session. Nothing is scheduled.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="words">
+  <div class="wrap">
+    <div class="kicker">Three words</div>
+    <h2>The same picture in your head and on disk.</h2>
+    <p class="lede">Every board file is plain Markdown in the repository, so the history is in git and a search finds everything. Point at a word to see where it lives.</p>
+    <div class="words">
+      <div class="word-list">
+        <button class="word" type="button" data-w="sprint"><b>Sprint</b><code>S-012</code><p>One outcome you asked for: its spec, and the stories that build it.</p></button>
+        <button class="word" type="button" data-w="story"><b>Story</b><code>S-012.3</code><p>One piece of a sprint: one agent, one fresh context, one commit.</p></button>
+        <button class="word" type="button" data-w="wave"><b>Wave</b><code>wave-0012</code><p>The stories built at once: the ready ones that are provably independent.</p></button>
+        <button class="word" type="button" data-w="input"><b>Input</b><code>I-007</code><p>Something only you can give. One file each; <code>/resolve</code> goes through them.</p></button>
+      </div>
+      <div class="files" aria-label="The board on disk">
+        <div class="dim">docs/board/</div>
+        <div>  BOARD.md            <span class="dim"># status and order, nothing else</span></div>
+        <div>  sprints/</div>
+        <div data-f="sprint">    S-012-share-links/</div>
+        <div data-f="sprint">      sprint.md         <span class="dim"># the spec</span></div>
+        <div data-f="story">      S-012.1-store.md</div>
+        <div data-f="story">      S-012.3-copy-link.md</div>
+        <div data-f="sprint">      review.md         <span class="dim"># the two reviewers</span></div>
+        <div>    done/             <span class="dim"># after the retro</span></div>
+        <div>  log/</div>
+        <div data-f="wave">    wave-0012.md        <span class="dim"># once it is verified</span></div>
+        <div>  inputs/</div>
+        <div data-f="input">    I-007.md            <span class="dim"># what waits on you</span></div>
+        <div>  inbox/              <span class="dim"># single stories from /fix</span></div>
+        <div>  LATER.md            <span class="dim"># the parking lot</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="inputs-sec">
+  <div class="wrap">
+    <div class="kicker">What waits on you</div>
+    <h2>Nobody stops to ask. You answer when you are back.</h2>
+    <p class="lede">Whenever building needs something only you can give, it writes one file, written for you coming back days later, and carries on with the rest. <code>/resolve</code> takes you through the open ones, the one that holds up the most first. Tap a card.</p>
+    <div class="inputs" id="input-cards">
+      <button type="button" class="input" aria-expanded="false"><span class="ic">⚖️</span><b>A decision</b><span class="eg">A choice the story left open; a finding that survived two fixes.</span><span class="ans"><b>Your answer</b>The option, or another.</span><span class="more">Your answer →</span></button>
+      <button type="button" class="input" aria-expanded="false"><span class="ic">🔑</span><b>A secret</b><span class="eg">An API key, a token.</span><span class="ans"><b>Your answer</b>"Done". You put the value into <code>.env</code> and the vault yourself; it never goes into the file or the session.</span><span class="more">Your answer →</span></button>
+      <button type="button" class="input" aria-expanded="false"><span class="ic">🛠️</span><b>Something to set up</b><span class="eg">A cloud project, a paid plan, a command the settings refused, a deploy that failed twice.</span><span class="ans"><b>Your answer</b>"Done", with what is not secret: a project id, an address.</span><span class="more">Your answer →</span></button>
+      <button type="button" class="input" aria-expanded="false"><span class="ic">👀</span><b>A look</b><span class="eg">A story that failed twice.</span><span class="ans"><b>Your answer</b>A hint, "I will build it by hand", or "take it out of the sprint".</span><span class="more">Your answer →</span></button>
+      <button type="button" class="input" aria-expanded="false"><span class="ic">✅</span><b>An approval</b><span class="eg">Landing a sprint when the board says <code>land: ask</code>.</span><span class="ans"><b>Your answer</b>Yes or no.</span><span class="more">Your answer →</span></button>
+      <button type="button" class="input stop" aria-expanded="false"><span class="ic">🛑</span><b>A stop</b><span class="eg">TruffleHog found a secret; the board itself is wrong.</span><span class="ans"><b>Your answer</b>What you did about it. Until then, no run starts.</span><span class="more">Your answer →</span></button>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <div class="kicker">Skills for your stack, written by your project</div>
+    <h2>No library to install, and none to outgrow.</h2>
+    <p class="lede"><code>/kickoff</code> starts one skill writer for each part of your stack. Each reads that part's own documentation for the version you use and writes one skill into <code>.claude/skills/</code>. Every rule names the page it came from; what a writer could not confirm is listed as open instead of guessed.</p>
+    <div class="skills">
+      <div class="skill"><span class="part">The language</span><span class="src">and its tooling</span><span class="out">SKILL.md</span></div>
+      <div class="skill"><span class="part">The framework</span><span class="src">for the version you use</span><span class="out">SKILL.md</span></div>
+      <div class="skill"><span class="part">The database</span><span class="src">its own docs, cited</span><span class="out">SKILL.md</span></div>
+      <div class="skill"><span class="part">The test runner</span><span class="src">what is open, said so</span><span class="out">SKILL.md</span></div>
+      <div class="skill"><span class="part">The host</span><span class="src">refreshed by <code>/retro</code></span><span class="out">SKILL.md</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="commands">
+  <div class="wrap">
+    <div class="kicker">Every command</div>
+    <h2>A command for every step, so nothing is pasted.</h2>
+    <p class="lede">Two come with the plugin. The rest are written into each project, so they have no prefix and you can change them there. Every command that plans is safe while a sprint is being built.</p>
+    <div class="cmd-tools">
+      <div class="chips" id="chips" role="group" aria-label="Filter commands"></div>
+      <label class="sr" for="q">Search commands</label>
+      <input id="q" type="search" placeholder="Search commands…">
+    </div>
+    <div class="cmds" id="cmds"></div>
+  </div>
+</section>
+
+<section id="holds">
+  <div class="wrap">
+    <div class="kicker">What it holds to</div>
+    <h2>Rules that are checked, not hoped for.</h2>
+    <div class="principles">
+      <div class="pr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><b>Private by default</b><p>A new repository is created private. Nothing becomes public without your yes.</p></div>
+      <div class="pr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg><b>Secrets stay out of git</b><p>TruffleHog checks every commit and every push, and both are refused when it is missing.</p></div>
+      <div class="pr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M14 15.5c.9-.3 2-.5 3-.5 3 0 4 2 4 5"/></svg><b>Reviewed before it leaves</b><p>A sprint stays on your machine until two reviewers have read it as a whole.</p></div>
+      <div class="pr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg><b>Every check runs locally</b><p>No CI to pay for and no pull requests to shepherd, unless your project decides otherwise.</p></div>
+      <div class="pr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><b>No guessed permissions</b><p>On autopilot, what the project's settings do not allow is refused, and costs one story, not the run.</p></div>
+    </div>
+    <div class="cta" style="margin-top:40px">
+      <a class="btn primary" href="https://github.com/spatialsparks/bearly-coding#install">Install it</a>
+      <a class="btn" href="https://github.com/spatialsparks/bearly-coding/blob/main/docs/how-it-works.md">Read how it works</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>bearly-coding</b> · MIT licence · <a href="https://github.com/spatialsparks/bearly-coding">github.com/spatialsparks/bearly-coding</a></p>
+    <p>The interview in rounds, the glossary, the test for when a decision deserves a record, the story slices, test first, the two-axis review and the retro are adapted from <a href="https://github.com/mattpocock/skills">Matt Pocock's skills</a> (MIT), written into this template in its own words.</p>
+    <p>This page loads nothing from anywhere else and sets no cookies.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  // Theme
+  $('#theme').addEventListener('click', () => {
+    const dark = getComputedStyle(document.documentElement).colorScheme.includes('dark');
+    const next = dark ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('theme', next); } catch (e) {}
+  });
+
+  // Copy the install lines
+  $('#copy').addEventListener('click', async (e) => {
+    const text = '/plugin marketplace add spatialsparks/bearly-coding\n/plugin install bearly-coding@bearly-coding';
+    try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied'; }
+    catch { e.target.textContent = 'Select and copy'; }
+    setTimeout(() => (e.target.textContent = 'Copy'), 1800);
+  });
+
+  // Steps from an idea to a first sprint
+  const steps = [
+    {
+      h: 'Start: it asks what you are doing',
+      p: 'It asks whether you are building software, doing tool or content work, or just thinking an idea through, and sets up only what that kind needs. For software it writes the workflow into a new project folder and prints what still needs a real answer. The first time, it asks where your projects go and where copies of secrets go, and remembers both.',
+      t: `<span class="p">&gt;</span> /bearly-coding:new my-thing
+What are we doing?
+  1. Build software
+  2. Tool or content work
+  3. Just ideate
+<span class="p">&gt;</span> 1
+<span class="ok">✓</span> my-thing/  commands · agents · board · docs · git hooks
+<span class="c">Next: a fresh session in my-thing/, then /ideate &lt;your idea&gt;</span>`,
+    },
+    {
+      h: 'Ideate: a conversation that plans',
+      p: 'It interviews you in rounds: every question that can be asked now, numbered, each with the answer it would recommend. It looks up what it can find out itself, argues with the weak parts, and writes the project\'s own words into the glossary the moment they settle. No code is written.',
+      t: `<span class="p">&gt;</span> /ideate a board where my family plans weekends
+<span class="hl">Round 1</span> · hardest first
+  1. Who adds a plan?          <span class="c">I'd pick: anyone in the family</span>
+  2. What must never happen?   <span class="c">I'd pick: a plan seen outside it</span>
+  3. What is out of scope?     <span class="c">I'd pick: chat</span>
+<span class="ok">✓</span> docs/GLOSSARY.md  plan · family · weekend`,
+    },
+    {
+      h: 'Kick off: once, and then it is gone',
+      p: 'It asks a few things in one go: how many agents may run in parallel, whether a finished sprint lands by itself or on your yes, and which parts of the stack get a skill. Then it builds the private repository, the stack\'s skills, the tooling with both verify tiers, the architecture and walking skeletons, the TruffleHog hooks, and the board with the first sprint cut into stories.',
+      t: `<span class="p">&gt;</span> /kickoff
+  Agents at once?             <span class="c">3</span>
+  Land a sprint by itself?    <span class="c">on my yes</span>
+  Skills for the stack?       <span class="c">all five parts</span>
+<span class="ok">✓</span> private repository · hooks · skeleton
+<span class="ok">✓</span> 5 skill writers started, one per part
+<span class="ok">✓</span> board: S-001 cut into 4 stories`,
+    },
+    {
+      h: 'Build: one story, or the whole board',
+      p: '/implement shows the sprint in progress and asks which story, builds it in your checkout, test first, and stops with a report and a commit message. You commit. /autopilot builds the board by itself, sprint after sprint, each with a fresh sprint lead, until nothing can move.',
+      t: `<span class="p">&gt;</span> /implement
+S-012 — Share links (2 of 5 stories done)
+  S-012.3  The dialog copies the link   <span class="ok">ready</span>
+  S-012.4  A link can expire            <span class="ok">ready</span>
+  S-012.5  An expired link says so      <span class="c">waits for S-012.3, S-012.4</span>
+
+Which story?  <span class="hl">[S-012.3]</span>  [S-012.4]  [The whole sprint]`,
+    },
+  ];
+  const panel = $('#step-panel');
+  const showStep = (i) => {
+    $$('.step-tab').forEach((b, j) => b.setAttribute('aria-selected', String(i === j)));
+    const s = steps[i];
+    panel.innerHTML = `<h3>${s.h}</h3><p>${s.p}</p><div class="term"><div class="term-bar"><i></i><i></i><i></i><b>a sketch of the session</b></div><pre>${s.t}</pre></div>`;
+  };
+  $$('.step-tab').forEach((b) => b.addEventListener('click', () => showStep(+b.dataset.step)));
+  $('.step-tabs').addEventListener('keydown', (e) => {
+    if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    const tabs = $$('.step-tab');
+    const i = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
+    const n = (i + (e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+    tabs[n].focus(); showStep(n); e.preventDefault();
+  });
+  showStep(0);
+
+  // The sprint simulator
+  const stories = {
+    1: { t: 'Links are stored' },
+    2: { t: 'The share dialog opens' },
+    3: { t: 'The dialog copies the link', deps: [2] },
+    4: { t: 'A link can expire' },
+    5: { t: 'An expired link says so', deps: [4] },
+    6: { t: 'An expired link shows nothing of the board', fix: true },
+  };
+  const commitText = {
+    1: 'feat: links are stored', 2: 'feat: the share dialog opens', 3: 'feat: the dialog copies the link',
+    4: 'feat: a link can expire', 5: 'feat: an expired link says so', 6: 'fix: an expired link shows nothing of the board',
+  };
+  const cols = (s) => Object.fromEntries([...s].map((c, i) => [i + 1, c]).filter(([, c]) => c !== '-'));
+  const scenarios = {
+    clean: {
+      commits: [1, 2, 4, 3, 5, 6],
+      steps: [
+        { k: 'You', h: 'You type /autopilot', p: 'Your session becomes the orchestrator. It builds nothing itself: it starts one sprint lead after another and keeps the few lines each reports.', c: 'wwwww-', a: { orch: 1 }, br: 'main' },
+        { k: 'Sprint lead', h: 'A fresh context for the sprint', p: 'A sprint lead takes the top sprint on the board, S-012, and cuts a local branch for it. Three stories are ready; two wait for others.', c: 'wwwww-', a: { lead: 1 }, br: 'sprint' },
+        { k: 'Wave 1', h: 'Three stories at once', p: 'The ready stories that are provably independent, as many as max_parallel allows. One implementer each, in its own git worktree, test first.', c: 'ppwpw-', a: { lead: 1, impl: 3 }, br: 'sprint' },
+        { k: 'Wave 1', h: 'Checked once, as a wave', p: 'The sprint lead checks each result and makes one commit per story. The full verify runs once on the wave, then one verifier reads it against its stories.', c: 'rrwrw-', a: { lead: 1, ver: 1 }, br: 'sprint', n: 3 },
+        { k: 'Wave 1', h: 'In, and logged', p: 'The wave is written to the log. The two stories that waited are ready now.', c: 'ddwdw-', a: { lead: 1 }, br: 'sprint', n: 3 },
+        { k: 'Wave 2', h: 'The two that waited', p: 'Two implementers, two fresh contexts. Each reads its story file and only what that story names.', c: 'ddpdp-', a: { lead: 1, impl: 2 }, br: 'sprint', n: 3 },
+        { k: 'Wave 2', h: 'Verified like the first', p: 'Every story is still one commit on the sprint\'s local branch. Nothing has left the machine.', c: 'ddrdr-', a: { lead: 1, ver: 1 }, br: 'sprint', n: 5 },
+        { k: 'Review', h: 'Two reviewers read the whole sprint', p: 'In fresh contexts, side by side: one against the sprint\'s spec, one against the project\'s standards.', c: 'ddddd-', a: { lead: 1, spec: 1, std: 1 }, br: 'sprint', n: 5 },
+        { k: 'Must fix', h: 'One finding becomes a story', p: 'The spec reviewer found that an expired link still shows the board\'s title. A must-fix becomes a story of the sprint and is built like any other.', c: 'dddddp', a: { lead: 1, impl: 1 }, br: 'sprint', n: 5 },
+        { k: 'Review', h: 'Built, verified, read again', p: 'The fix is verified and both reviewers read the sprint once more. Nothing is left to fix.', c: 'dddddd', a: { lead: 1, ver: 1, spec: 1, std: 1 }, br: 'sprint', n: 6 },
+        { k: 'Landed', h: 'Only now does it leave the machine', p: 'One merge into main, the push and the deploy. The next sprint gets a fresh sprint lead.', c: 'dddddd', a: { orch: 1 }, br: 'landed', n: 6 },
+      ],
+    },
+    needs: {
+      commits: [1, 2, 3, 4, 5],
+      steps: [
+        { k: 'You', h: 'You type /autopilot', p: 'Your session becomes the orchestrator and starts a sprint lead for S-012.', c: 'wwwww-', a: { orch: 1 }, br: 'main' },
+        { k: 'Sprint lead', h: 'A fresh context for the sprint', p: 'The sprint lead cuts a local branch for S-012. Three stories are ready.', c: 'wwwww-', a: { lead: 1 }, br: 'sprint' },
+        { k: 'Wave 1', h: 'Three stories at once', p: 'One implementer per story, each in its own worktree, test first.', c: 'ppwpw-', a: { lead: 1, impl: 3 }, br: 'sprint' },
+        { k: 'Set aside', h: 'S-012.4 needs a decision', p: 'How long should a link live by default? The sprint left it open. The question goes into a file with the option the builder would take, and the story is set aside. Nobody stops to ask.', c: 'rrwww-', a: { lead: 1, ver: 1 }, br: 'sprint', n: 2, blocked: { 4: 'I-001' }, inp: [['I-001', 'open']] },
+        { k: 'Goes on', h: 'Everything else goes on', p: 'Wave 1 is in with two stories. S-012.3 is ready; S-012.5 depends on the story that waits, so it waits too.', c: 'ddwww-', a: { lead: 1 }, br: 'sprint', n: 2, blocked: { 4: 'I-001' }, inp: [['I-001', 'open']] },
+        { k: 'Wave 2', h: 'What can move, moves', p: 'One implementer for the one story that is ready.', c: 'ddpww-', a: { lead: 1, impl: 1 }, br: 'sprint', n: 2, blocked: { 4: 'I-001' }, inp: [['I-001', 'open']] },
+        { k: 'Run ends', h: 'Nothing can move, so the run ends', p: 'The sprint is waiting. Nothing on its branch is pushed. The run ends with one list of what waits on you; in a longer run, the next sprint would be built on top meanwhile.', c: 'dddww-', a: { orch: 1 }, br: 'held', n: 3, blocked: { 4: 'I-001' }, inp: [['I-001', 'open']] },
+        { k: 'You', h: 'Days later: /resolve', p: 'It shows I-001: what is needed, why an agent could not settle it, what it holds up, and the option it would pick. You answer "30 days". It writes your answer into the file and changes nothing else.', c: 'dddww-', a: { you: 1 }, br: 'held', n: 3, inp: [['I-001', 'answered']] },
+        { k: 'Wave 3', h: '/autopilot carries on from the board', p: 'The answer is applied when building starts again. S-012.4 is built.', c: 'dddpw-', a: { lead: 1, impl: 1 }, br: 'sprint', n: 3, inp: [['I-001', 'answered']] },
+        { k: 'Wave 4', h: 'And the story that waited for it', p: 'Each wave is verified once, as always.', c: 'ddddp-', a: { lead: 1, impl: 1 }, br: 'sprint', n: 4, inp: [['I-001', 'answered']] },
+        { k: 'Review', h: 'Two reviewers read the whole sprint', p: 'Against its spec, and against the project\'s standards. Clean.', c: 'ddddd-', a: { lead: 1, spec: 1, std: 1 }, br: 'sprint', n: 5, inp: [['I-001', 'answered']] },
+        { k: 'Landed', h: 'Then it lands, whole', p: 'One merge into main, the push and the deploy.', c: 'ddddd-', a: { orch: 1 }, br: 'landed', n: 5, inp: [['I-001', 'answered']] },
+      ],
+    },
+  };
+  const agentDefs = [
+    ['you', 'You'], ['orch', 'Orchestrator · your session'], ['lead', 'Sprint lead'],
+    ['impl', 'Implementer'], ['impl', 'Implementer'], ['impl', 'Implementer'],
+    ['ver', 'Verifier'], ['spec', 'Reviewer · spec'], ['std', 'Reviewer · standards'],
+  ];
+
+  const lanes = Object.fromEntries($$('.lane').map((l) => [l.dataset.col, l]));
+  const cards = {};
+  for (const id of Object.keys(stories)) {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `<div class="id">S-012.${id}</div><div class="t">${esc(stories[id].t)}</div><span class="b"></span>`;
+    if (stories[id].fix) el.classList.add('fix');
+    cards[id] = el;
+  }
+  $('#agents').innerHTML = agentDefs.map(([k, label]) => `<span class="agent ${k === 'you' ? 'you' : ''}" data-a="${k}">${label}</span>`).join('');
+
+  let scn = 'clean', i = 0, timer = null;
+  const S = () => scenarios[scn].steps;
+
+  function badge(id, step, col) {
+    if (step.blocked?.[id]) return ['blocked', `needs you · ${step.blocked[id]}`];
+    if (col === 'p') return ['prog', 'building in a worktree'];
+    if (col === 'r') return ['rev', 'checking'];
+    if (col === 'd') return ['done', 'one commit'];
+    const deps = stories[id].deps || [];
+    const open = deps.filter((d) => step.cc[d] !== 'd' || step.blocked?.[d]);
+    if (step.br === 'main') return ['', 'planned'];
+    return open.length ? ['', `waits for ${open.map((d) => 'S-012.' + d).join(', ')}`] : ['ready', 'ready'];
+  }
+
+  function render(animate) {
+    const step = S()[i];
+    step.cc = cols(step.c);
+    const first = {};
+    for (const [id, el] of Object.entries(cards)) if (el.isConnected) first[id] = el.getBoundingClientRect();
+    for (const id of Object.keys(stories)) {
+      const el = cards[id], col = step.cc[id];
+      if (!col) { el.remove(); continue; }
+      const [cls, text] = badge(id, step, col);
+      el.className = 'card ' + ({ p: 'prog', r: 'rev', d: 'done', w: '' }[col]) + ' ' + cls + (stories[id].fix ? ' fix' : '');
+      el.querySelector('.b').textContent = text;
+      lanes[col].appendChild(el);
+    }
+    for (const [c, lane] of Object.entries(lanes)) lane.querySelector('.count').textContent = lane.querySelectorAll('.card').length || '';
+    if (animate && !reduced) {
+      for (const [id, el] of Object.entries(cards)) {
+        if (!el.isConnected) continue;
+        const a = first[id], b = el.getBoundingClientRect();
+        if (!a) { el.animate([{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }], { duration: 450, easing: 'ease-out' }); continue; }
+        const dx = a.left - b.left, dy = a.top - b.top;
+        if (dx || dy) el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      }
+    }
+    $('#n-k').textContent = `${step.k} · step ${i + 1} of ${S().length}`;
+    $('#n-h').textContent = step.h;
+    $('#n-p').textContent = step.p;
+    let impl = step.a.impl || 0;
+    $$('#agents .agent').forEach((el) => {
+      const k = el.dataset.a;
+      el.classList.toggle('on', k === 'impl' ? impl-- > 0 : !!step.a[k]);
+    });
+    const br = $('#branch');
+    br.className = 'branch ' + (step.br === 'landed' ? 'landed' : step.br === 'held' ? 'held' : '');
+    br.textContent = { main: 'main', sprint: 'sprint/S-012 · local', held: 'sprint/S-012 · local, held back', landed: 'merged into main · pushed · deployed' }[step.br];
+    const n = step.n || 0;
+    $('#commits').innerHTML = n ? scenarios[scn].commits.slice(0, n).map((id) => `<li>${esc(commitText[id])} <span class="s">(S-012.${id})</span></li>`).join('') : '<li class="empty">none yet</li>';
+    $('#inputs').innerHTML = step.inp ? step.inp.map(([f, s]) => `<li>${f}.md <span class="s">· ${s}</span></li>`).join('') : '<li class="empty">nothing</li>';
+    $$('#dots button').forEach((d, j) => (j === i ? d.setAttribute('aria-current', 'step') : d.removeAttribute('aria-current')));
+    $('#back').disabled = i === 0;
+    $('#next').disabled = i === S().length - 1;
+  }
+
+  function dots() {
+    $('#dots').innerHTML = S().map((s, j) => `<button type="button" aria-label="Step ${j + 1}: ${esc(s.h)}"></button>`).join('');
+    $$('#dots button').forEach((d, j) => d.addEventListener('click', () => { stop(); i = j; render(true); }));
+  }
+  function stop() { clearInterval(timer); timer = null; $('#play').textContent = '▶ Play'; }
+  function play() {
+    if (i === S().length - 1) { i = 0; render(true); }
+    $('#play').textContent = '❚❚ Pause';
+    timer = setInterval(() => {
+      if (i >= S().length - 1) return stop();
+      i++; render(true);
+    }, 3800);
+  }
+  $('#play').addEventListener('click', () => (timer ? stop() : play()));
+  $('#next').addEventListener('click', () => { stop(); if (i < S().length - 1) { i++; render(true); } });
+  $('#back').addEventListener('click', () => { stop(); if (i > 0) { i--; render(true); } });
+  $('#reset').addEventListener('click', () => { stop(); i = 0; render(true); });
+  $$('.seg button').forEach((b) => b.addEventListener('click', () => {
+    stop(); scn = b.dataset.scn; i = 0;
+    $$('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    dots(); render(true);
+  }));
+  dots(); render(false);
+
+  if (!reduced && 'IntersectionObserver' in window) {
+    let started = false;
+    new IntersectionObserver((entries, obs) => {
+      if (entries.some((e) => e.isIntersecting) && !started) { started = true; obs.disconnect(); setTimeout(() => !timer && i === 0 && play(), 600); }
+    }, { threshold: 0.45 }).observe($('#sim'));
+  }
+
+  // Three words
+  const lightUp = (w) => {
+    $$('.word').forEach((b) => b.classList.toggle('on', b.dataset.w === w));
+    $$('.files [data-f]').forEach((f) => f.classList.toggle('lit', f.dataset.f === w));
+  };
+  $$('.word').forEach((b) => {
+    b.addEventListener('mouseenter', () => lightUp(b.dataset.w));
+    b.addEventListener('focus', () => lightUp(b.dataset.w));
+    b.addEventListener('click', () => lightUp(b.dataset.w));
+  });
+  lightUp('sprint');
+
+  // Input cards
+  $$('.input').forEach((b) => b.addEventListener('click', () => b.setAttribute('aria-expanded', String(b.getAttribute('aria-expanded') !== 'true'))));
+
+  // Commands
+  const commands = [
+    ['Start', '/bearly-coding:new', 'Starts a project, a light workspace for a small tool, or a folder for thinking an idea through.'],
+    ['Start', '/bearly-coding:update', 'Brings an existing project onto the workflow, or up to date with it.'],
+    ['Plan', '/ideate', 'Thinks an idea through with you, in rounds of questions.'],
+    ['Plan', '/kickoff', 'Repository, stack skills, tooling, skeleton and board. Once.'],
+    ['Plan', '/feature', 'Adds a sprint: its spec and its stories.'],
+    ['Plan', '/fix', 'Adds one story for a bug, reproduced first.'],
+    ['Plan', '/refactor', 'Adds a restructuring, behaviour pinned by tests first.'],
+    ['Plan', '/stack-skills', 'Has the skill for a part of the stack written or refreshed.'],
+    ['Build', '/implement', 'One story by hand. You commit.'],
+    ['Build', '/autopilot', 'The board by itself, for days if need be.'],
+    ['Build', '/resolve', 'Takes you through what building is waiting on.'],
+    ['Review', '/sprint-review', 'Two reviewers on demand: spec and standards.'],
+    ['Review', '/project-review', 'A survey of the codebase for what would improve it.'],
+    ['Review', '/retro', 'Moves what a sprint taught into the documents and the skills.'],
+    ['Look', '/standup', 'Where things stand, and the next command.'],
+    ['Look', '/board', 'The board in your browser, live while a wave runs.'],
+  ];
+  const groups = ['All', 'Start', 'Plan', 'Build', 'Review', 'Look'];
+  let group = 'All';
+  $('#chips').innerHTML = groups.map((g) => `<button type="button" aria-pressed="${g === 'All'}">${g}</button>`).join('');
+  $('#cmds').innerHTML = commands.map(([g, c, d]) => `<div class="cmd" data-g="${g}"><small>${g}</small><code>${c}</code><span>${esc(d)}</span></div>`).join('');
+  const filter = () => {
+    const q = $('#q').value.trim().toLowerCase();
+    $$('.cmd').forEach((el) => { el.hidden = !((group === 'All' || el.dataset.g === group) && (!q || el.textContent.toLowerCase().includes(q))); });
+  };
+  $$('#chips button').forEach((b) => b.addEventListener('click', () => {
+    group = b.textContent;
+    $$('#chips button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    filter();
+  }));
+  $('#q').addEventListener('input', filter);
+})();
+</script>
+</body>
+</html>
