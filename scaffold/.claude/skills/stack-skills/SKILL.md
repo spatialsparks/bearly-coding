@@ -24,8 +24,9 @@ whatever of these this session has not read already.
    of your own, on `plan/skills-<slug>`.
 4. **Start one skill writer per part**, side by side, at most `max_parallel` at once
    (`docs/board/BOARD.md`). Each brief names the full path of the file in your worktree.
-   Claude Code will ask me before a writer reads a site and before a skill is written: those
-   questions are mine, so do not work around one that I refuse.
+   In the default and accept-edits modes, Claude Code will ask me before a writer reads a site
+   and before a skill is written; in auto mode a background check decides, and in bypass mode
+   nothing asks. Do not work around a refusal, whoever made it.
 5. **Check each skill** and **show me** one line per skill with what is not yet confirmed, as
    steps 5 and 6 there have it. Change what I ask.
 6. **Land it**, as `docs/PLANNING.md` says: commit only the skill folders, as

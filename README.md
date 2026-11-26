@@ -129,8 +129,10 @@ the page it came from, and what a writer could not confirm is listed as open ins
 guessed.
 
 Every agent that touches a part reads its skill first. `/retro` adds what a sprint taught, and
-`/stack-skills` writes one for a part that joins later. Claude Code asks you before a writer
-reads a site and before a skill is written, so you see every skill before it is committed.
+`/stack-skills` writes one for a part that joins later. In the default and accept-edits modes,
+Claude Code asks you before a writer reads a site and before a skill is written. In auto mode a
+background check decides instead, and in bypass mode nothing asks. Whichever mode you use, you
+see every skill, and what it could not confirm, before it is committed.
 
 ## What it holds to
 

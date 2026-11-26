@@ -418,8 +418,11 @@ sprints prove them, and adds what a sprint taught. `/stack-skills` has a skill w
 part that joins later, or refreshed for a new major version.
 
 A skill is an instruction every later agent follows, so writing one is never left to
-autopilot. A skill writer runs only in a session you are in, has no shell, and Claude Code
-asks you before it reads a site and before it writes a skill. If you keep a folder of skills
+autopilot. A skill writer runs only in a session you are in, has no shell, and takes that
+session's permission mode. In the default and accept-edits modes, Claude Code asks you before
+it reads a site and before it writes a skill; in auto mode a background check decides instead,
+and in bypass mode nothing asks. In every mode, you see each skill before it is committed.
+If you keep a folder of skills
 from earlier projects, `/bearly-coding:new` copies it into the new project as drafts, and each
 writer starts from the draft for its part and checks it against the documentation.
 

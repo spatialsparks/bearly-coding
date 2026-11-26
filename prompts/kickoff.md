@@ -323,9 +323,10 @@ Work in this order. Commit after each numbered step.
 3. The stack's skills, then the tooling. Have a skill written for each part of the stack I
    agreed to in step 1, as "Having skills written" in `docs/STACK_SKILLS.md` says: one skill
    writer per part, side by side, at most `max_parallel` at once, each writing
-   `.claude/skills/<part>/SKILL.md` (ADR-0014). Claude Code will ask me before a writer reads
-   a site and before a skill is written: those questions are mine, so never work around one I
-   refuse. Check each skill, show me one line per skill with what is not yet confirmed, and
+   `.claude/skills/<part>/SKILL.md` (ADR-0014). In the default and accept-edits modes, Claude
+   Code will ask me before a writer reads a site and before a skill is written; in auto mode a
+   background check decides, and in bypass mode nothing asks. Never work around a refusal,
+   whoever made it. Check each skill, show me one line per skill with what is not yet confirmed, and
    commit them. Then read them: the tooling is set up the way they say. Then:
    {{PACKAGE_MANAGER}} set to save exact versions, with an allowlist for install
    scripts and the runtime version pinned in the repository and supplied by the toolchain; the

@@ -97,8 +97,9 @@ commands — keep asking, as before.
 - `skill-writer.md` — writes the skill for one part of the stack from that part's own
   documentation, one writer per part (ADR-0014). The one agent here that is not for autopilot:
   it has no permission mode of its own and no shell, and runs only in a session you are in.
-  Claude Code asks you before it reads a site and before it writes a skill, and it would
-  refuse both to an agent that never asks.
+  It takes your session's mode: in the default and accept-edits modes, Claude Code asks you
+  before it reads a site and before it writes a skill; in auto mode a background check decides,
+  and in bypass mode nothing asks. It would refuse both to an agent that never asks.
 
 ## `skills/`
 

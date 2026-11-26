@@ -17,9 +17,10 @@ documentation of every part is public, and reading it for the version in hand is
 does well in a context of its own.
 
 Two facts shaped the answer. A skill is an instruction every later agent follows, so what goes
-into one matters more than what goes into a source file. And Claude Code asks the owner before
-anything is written under `.claude/`, in every mode that asks at all, and refuses it to an
-agent that never asks.
+into one matters more than what goes into a source file. And Claude Code protects `.claude/`:
+no allow rule lets anything write there unasked. It asks the owner in the default and
+accept-edits modes, leaves it to a background check in auto mode, and refuses it to an agent
+that never asks.
 
 ## Decision
 
@@ -31,9 +32,10 @@ agent that never asks.
 - **Nothing is guessed.** Every rule points at the page it came from, and what a writer could
   not confirm is listed as such at the end of the skill.
 - **Only in a session the owner is in.** `/kickoff` has them written in Phase 0,
-  `/stack-skills` at any time, `/feature` when a sprint brings in a new part. Claude Code asks
-  the owner before a writer reads a site and before a skill is written, and those two questions
-  are the review. No allow rule is added for either, and nothing on autopilot writes a skill.
+  `/stack-skills` at any time, `/feature` when a sprint brings in a new part. In the default and
+  accept-edits modes, Claude Code asks the owner before a writer reads a site and before a skill
+  is written; in auto mode a background check decides. The review that happens in every mode is
+  the owner reading each skill before it is committed. No allow rule is added for either, and nothing on autopilot writes a skill.
 - **Sprints grow them.** `/retro` writes what a sprint taught about a part into its skill, with
   the sprint's id. A writer that refreshes a skill keeps those lines.
 - **An owner's earlier skills are a starting point, not a source of truth.** Skills brought

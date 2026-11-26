@@ -65,8 +65,8 @@ changelog. Search only when you cannot find a page from the site itself.
 
 ## When something is refused
 
-Claude Code asks the owner before you read a site and before you write under `.claude/`. A
-refusal is an answer.
+Before you read a site and before you write under `.claude/`, Claude Code asks the owner or,
+in auto mode, a background check decides. A refusal is an answer, whoever gave it.
 
 - **A site is refused**: do not look for the same page elsewhere. Write what the project's own
   files show — the installed package, its types, its readme — and put the rest under Not yet

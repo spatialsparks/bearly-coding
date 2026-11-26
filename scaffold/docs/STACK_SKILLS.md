@@ -93,9 +93,11 @@ keep it to about 150 lines, rules rather than explanations (ADR-0008).
    most `max_parallel` at once. Each brief names: the part and its version; the documentation
    site; the file to write, as a full path; the draft to start from, if there is one; and, for
    a refresh, that the skill exists and what changed.
-4. **The owner answers Claude Code's questions.** It asks before a writer reads a site for the
-   first time, and before a skill is written under `.claude/`. Both are the owner's to answer,
-   and they are the review. Add no allow rule for either to `.claude/settings.json`: a rule
+4. **The owner answers Claude Code's questions.** In the default and accept-edits modes it asks
+   before a writer reads a site for the first time, and before a skill is written under
+   `.claude/`. Both are the owner's to answer. In auto mode a background check decides instead,
+   and in bypass mode nothing asks, so the review that happens in every mode is step 6. Add no
+   allow rule for either to `.claude/settings.json`: a rule
    cannot tell a skill writer from an agent on autopilot, and those read no web pages and
    write no skills.
 5. **Check each skill**: the frontmatter's `name` is the folder's; the seven headings, Sources
