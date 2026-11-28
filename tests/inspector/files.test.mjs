@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-import { budgetOf, budgets, buildIndex, fileRoute, groups, hints, resolver } from '../../scaffold/tools/inspector/files.mjs';
+import { buildIndex, fileRoute, groups, hints, resolver } from '../../scaffold/tools/inspector/files.mjs';
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 
@@ -106,31 +106,11 @@ test('a path with odd characters survives its route', () => {
   assert.equal(fileRoute('docs/a b/c#d.md', 'x y'), '#/file/docs/a%20b/c%23d.md@x%20y');
 });
 
-test('budgets come from the workflow table, and fall back to the defaults', () => {
-  const defaults = { root: 100, progress: 100, board: 100, directory: 40 };
-  assert.deepEqual(budgets(read('../../scaffold/docs/AGENT_WORKFLOW.md')), defaults);
-  assert.deepEqual(budgets(read('../fixtures/drifted/AGENT_WORKFLOW.md')), { root: 120, progress: 100, board: 200, directory: 50 });
-  assert.deepEqual(budgets(''), defaults);
-  assert.deepEqual(budgets(null), defaults);
-});
-
-test('hints name what is over budget or unfilled, and nothing else', () => {
-  const limits = { root: 100, progress: 100, board: 200, directory: 40 };
-  assert.equal(budgetOf('CLAUDE.md', limits), 100);
-  assert.equal(budgetOf('apps/web/CLAUDE.md', limits), 40);
-  assert.equal(budgetOf('docs/board/BOARD.md', limits), 200);
-  assert.equal(budgetOf('docs/ARCHITECTURE.md', limits), null);
-
-  assert.deepEqual(hints({ path: 'CLAUDE.md', lines: 100, slots: 0 }, limits), []);
-  assert.deepEqual(hints({ path: 'CLAUDE.md', lines: 101, slots: 0 }, limits), [{ kind: 'budget', text: '101 lines, over its budget of 100' }]);
-  assert.deepEqual(hints({ path: 'docs/ARCHITECTURE.md', lines: 900, slots: 2 }, limits), [{ kind: 'slot', text: '2 placeholders not filled in' }]);
-  assert.deepEqual(hints({ path: 'apps/web/CLAUDE.md', lines: 41, slots: 1 }, limits).map((h) => h.kind), ['budget', 'slot']);
-});
-
-test('no workflow table makes the budget reader crawl', () => {
-  const started = performance.now();
-  budgets(`## Context levels\n\n| Level | File | Budget |\n| --- | --- | --- |\n| L1 | \`docs/PROGRESS.md\` | ${'1'.repeat(64000)} |\n`);
-  assert.ok(performance.now() - started < 1500);
+test('hints name what is unfilled, and nothing else: no file has a line budget', () => {
+  assert.deepEqual(hints({ path: 'CLAUDE.md', lines: 5000, slots: 0 }), []);
+  assert.deepEqual(hints({ path: 'apps/web/CLAUDE.md', lines: 5000, slots: 0 }), []);
+  assert.deepEqual(hints({ path: 'docs/ARCHITECTURE.md', lines: 900, slots: 2 }), [{ kind: 'slot', text: '2 placeholders not filled in' }]);
+  assert.deepEqual(hints({ path: 'apps/web/CLAUDE.md', lines: 41, slots: 1 }), [{ kind: 'slot', text: '1 placeholder not filled in' }]);
 });
 
 // --- Today's layout: a folder per sprint, a file per story, a log file per wave (ADR-0011) -------
@@ -220,13 +200,6 @@ test('today: references resolve to stories and sprints, wherever the sprint fold
   assert.equal(resolve('code', 'sprint.md'), fileRoute('docs/board/sprints/S-012-share-links/sprint.md')); // beside the story
   assert.equal(resolve('code', 'docs/GLOSSARY.md'), fileRoute('docs/GLOSSARY.md'));
   assert.equal(resolve('link', '../../_TEMPLATE-story.md'), fileRoute('docs/board/_TEMPLATE-story.md'));
-});
-
-test('today: the glossary has a budget, as every file read by everyone has', () => {
-  const limits = { root: 100, progress: 100, board: 100, directory: 40 };
-  assert.equal(budgetOf('docs/GLOSSARY.md', limits), 100);
-  assert.equal(budgetOf('docs/FEATURES.md', limits), null);
-  assert.equal(budgetOf('docs/CODING_STANDARDS.md', limits), null);
 });
 
 test('today: an input is found by its id, open or applied', () => {

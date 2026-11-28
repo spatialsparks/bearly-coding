@@ -2,7 +2,7 @@
 // board or the files. It only ever sends GET requests - there is nothing here that can write.
 
 import { parseBoard, parseProgress, parseSprintLog, parseWave, waveFiles } from './board.mjs';
-import { budgets, buildIndex, hints } from './files.mjs';
+import { buildIndex, hints } from './files.mjs';
 import { html } from './html.mjs';
 import { columns } from './live.mjs';
 import { boardView } from './view-board.mjs';
@@ -10,7 +10,7 @@ import { filesView } from './view-files.mjs';
 
 const POLL_MS = 5000;
 // SPRINT_LOG.md is the single log of before ADR-0011; today the log is a file per wave.
-const CORE = ['docs/board/BOARD.md', 'docs/board/SPRINT_LOG.md', 'docs/PROGRESS.md', 'docs/AGENT_WORKFLOW.md'];
+const CORE = ['docs/board/BOARD.md', 'docs/board/SPRINT_LOG.md', 'docs/PROGRESS.md'];
 const LATEST = 3; // the waves the board shows, and so the only log files it fetches
 const STATUS_TONE = { 'on-track': 'success', blocked: 'danger', 'needs-owner': 'warning' };
 
@@ -53,7 +53,7 @@ async function textOf(path) {
 
 async function build(state) {
   model = { ...state, paths: state.files.map((file) => file.path), byPath: new Map(state.files.map((file) => [file.path, file])) };
-  const [board, log, progress, workflow] = await Promise.all(CORE.map(textOf));
+  const [board, log, progress] = await Promise.all(CORE.map(textOf));
   const waves = waveFiles(model.paths);
   const latest = await Promise.all(waves.slice(0, LATEST).map(textOf));
   const single = parseSprintLog(log);
@@ -67,9 +67,8 @@ async function build(state) {
     count: waves.length,
   };
   model.progress = parseProgress(progress);
-  model.budgets = budgets(workflow);
   model.columns = columns({ board: model.board, log: model.log, paths: model.paths, git: state.git });
-  model.flagged = state.files.filter((file) => hints(file, model.budgets).length).length;
+  model.flagged = state.files.filter((file) => hints(file).length).length;
 }
 
 function findCard(id) {

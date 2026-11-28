@@ -103,7 +103,8 @@ inserted, so "directive 9" means the same thing in six months.
 19. **Update the context files inside the change, not afterwards.** A story updates the
     `CLAUDE.md` of every directory whose public surface it changed. Each wave is recorded on
     the sprint branch before the next one starts — the board, its log file and
-    `docs/PROGRESS.md` — so a sprint that lands is always recorded.
+    `docs/PROGRESS.md` — so a sprint that lands is always recorded. No context file has a line
+    limit: each is as precise and short as possible, with only what is necessary.
 
 20. **Record the decisions that matter as ADRs.** A technical choice that is hard to reverse,
     surprising without its context, and the result of a real trade-off gets

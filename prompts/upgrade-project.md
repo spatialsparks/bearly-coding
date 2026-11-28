@@ -144,9 +144,10 @@ home → how (keep, convert, merge, move to docs/archive/, or delete). Apply the
   repository. So does a comment that silences it, such as eslint-disable max-lines, and a test
   that only proves the rule fires; a test that also proves other rules loses only this rule's
   case. That is the one exception to "no test is deleted". Show me each in the map. Files already
-  split stay split, and no existing code is rewritten. The context files' line budgets and the
-  narrow-read rule of ADR-0008 stay. The agents implementer.md and verifier.md use this project's
-  number for the directive, and docs/CODING_STANDARDS.md does too.
+  split stay split, and no existing code is rewritten. The narrow-read rule of ADR-0008 stays.
+  The context files have no line budgets either, but stay as precise and short as possible.
+  The agents implementer.md and verifier.md use this project's number for the directive, and
+  docs/CODING_STANDARDS.md does too.
 - **ADR numbers never change either.** Keep the project's ADRs where they are, in its own
   numbering scheme. The template's reasoning arrives as this project's next ADRs, each in
   today's words — "adopt the board, sprints and waves", adapted from ADR-0005 as ADR-0007,

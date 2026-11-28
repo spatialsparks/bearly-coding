@@ -55,8 +55,8 @@ default until Ready is empty — all in one context.
   300 lines — by `cat`, by `sed -n` over all of it, or by Read without a range. The verifier
   starts from `git diff --stat` and the diffs, and reads the code around a change only where the
   diff needs it. A card's **Read** field names the functions or sections to read, not just the
-  files. A directory's `CLAUDE.md` keeps to its 40 lines, because Claude Code attaches the whole
-  file to every file read in that directory.
+  files. No context file has a line limit; each is as precise and short as possible, with only
+  what is necessary (changed 2026-11-28).
 - **Effort `high`, and `max` for the verifier.** Sessions get it through
   `CLAUDE_CODE_EFFORT_LEVEL` under `env` in `.claude/settings.json`, the implementer and the
   architect through `effort: high`. The verifier stays at `max`: it runs once per sprint, so it

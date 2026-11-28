@@ -2,7 +2,8 @@
 
 > The words this project uses, and what each one means here. Every session and every agent
 > reads this file, and every name — in code, tests, commits, stories and specs — uses these
-> terms and none of the words under _Avoid_. Keep it under 100 lines.
+> terms and none of the words under _Avoid_. It has no line limit: keep it as precise and short
+> as possible, with only what is necessary.
 >
 > A planning session writes a term the moment its meaning settles (`docs/PLANNING.md`). An entry
 > says what the thing **is**, in one or two sentences — not what it does, and nothing about how

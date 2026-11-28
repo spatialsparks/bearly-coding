@@ -112,7 +112,7 @@ Create exactly this, and keep it small. _[Adjust the source tree under the horiz
 
 ```
 {{PROJECT_NAME}}/
-  CLAUDE.md                  # L0 root context, <= 100 lines
+  CLAUDE.md                  # L0 root context, precise and short
   README.md                  # human quickstart
   KICKOFF.md                 # this file, kept for provenance
   .env.example               # placeholder keys only, never real values
@@ -161,7 +161,8 @@ Create exactly this, and keep it small. _[Adjust the source tree under the horiz
   {{SOURCE_TREE}}
 ```
 
-Every source directory gets its own `CLAUDE.md` of at most 40 lines: purpose, public API,
+Every source directory gets its own `CLAUDE.md`, with no line limit but as precise and short as
+possible, with only what is necessary: purpose, public API,
 invariants, test command, gotchas. Nothing else: Claude Code attaches the whole file to every
 file read in that directory. The shape is in `docs/_DIRECTORY_CLAUDE_TEMPLATE.md`.
 

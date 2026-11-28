@@ -34,7 +34,7 @@ bearly-coding/
     update-project.md    brings a project already on the board up to this template
   tests/                 the tools' tests, and checks that the template agrees with itself
   scaffold/              the files a new project starts with
-    CLAUDE.md            root context, at most 100 lines
+    CLAUDE.md            root context, precise and short
     README.md            human quickstart
     .gitignore           secrets-safe baseline, plus the agents' worktrees
     .env.example         placeholder keys only

@@ -1,9 +1,6 @@
 // The context files as a reader sees them: grouped by what they are for, with references
-// between them turned into links, and a hint where one has outgrown its budget or still holds
-// a placeholder nobody filled in.
-
-import { firstTable, sections } from './board.mjs';
-import { stripComments } from './markdown.mjs';
+// between them turned into links, and a hint where one still holds a placeholder nobody filled
+// in.
 
 // The workflow commands, as against the stack skills that live in the same folder.
 const COMMANDS = [
@@ -123,45 +120,9 @@ export function resolver(index, current = '') {
   };
 }
 
-const DEFAULT_BUDGETS = { root: 100, progress: 100, board: 100, directory: 40 };
-
-/** Line budgets, read from the "Context levels" table of AGENT_WORKFLOW.md where it states them. */
-export function budgets(workflowText) {
-  const out = { ...DEFAULT_BUDGETS };
-  const levels = sections(stripComments(workflowText ?? '')).find((s) => s.key.startsWith('contextlevels'));
-  const lines = (text, pattern = /(\d{1,6})\s*lines/) => {
-    const found = pattern.exec(text);
-    return found ? Number(found[1]) : null;
-  };
-  for (const row of firstTable(levels?.lines ?? [])) {
-    const file = row.file ?? '';
-    const budget = row.budget ?? '';
-    if (/PROGRESS\.md/.test(file)) {
-      out.progress = lines(budget) ?? out.progress;
-      out.board = lines(budget, /(\d{1,6})\s*(?:lines\s*)?for the board/) ?? out.progress;
-    } else if (/directory/i.test(file)) {
-      out.directory = lines(budget) ?? out.directory;
-    } else if (/`CLAUDE\.md`/.test(file)) {
-      out.root = lines(budget) ?? out.root;
-    }
-  }
-  return out;
-}
-
-export function budgetOf(path, limits) {
-  if (path === 'CLAUDE.md') return limits.root;
-  if (path === 'docs/PROGRESS.md' || path === 'docs/GLOSSARY.md') return limits.progress;
-  if (path === 'docs/board/BOARD.md') return limits.board;
-  return /\/CLAUDE\.md$/.test(path) ? limits.directory : null;
-}
-
-/** What is worth a second look in a file: `{ kind: 'budget' | 'slot', text }`. */
-export function hints(file, limits) {
+/** What is worth a second look in a file: `{ kind: 'slot', text }`. No context file has a line budget. */
+export function hints(file) {
   const out = [];
-  const budget = budgetOf(file.path, limits);
-  if (budget !== null && file.lines > budget) {
-    out.push({ kind: 'budget', text: `${file.lines} lines, over its budget of ${budget}` });
-  }
   if (file.slots > 0) {
     out.push({ kind: 'slot', text: file.slots === 1 ? '1 placeholder not filled in' : `${file.slots} placeholders not filled in` });
   }

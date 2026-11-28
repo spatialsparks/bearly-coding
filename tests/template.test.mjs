@@ -476,9 +476,20 @@ test('a sprint leaves this machine only when it is finished: one commit per stor
   }
 });
 
-test('the root context file stays within its budget', () => {
-  assert.ok(read(scaffold, 'CLAUDE.md').trimEnd().split('\n').length <= 100);
-  assert.ok(read(scaffold, 'docs', 'PROGRESS.md').trimEnd().split('\n').length <= 100);
+test('no context file has a line limit, and each says to stay precise and short', () => {
+  const files = [
+    [scaffold, 'CLAUDE.md'],
+    [scaffold, 'docs', 'PROGRESS.md'],
+    [scaffold, 'docs', 'GLOSSARY.md'],
+    [scaffold, 'docs', 'AGENT_WORKFLOW.md'],
+    [scaffold, 'docs', '_DIRECTORY_CLAUDE_TEMPLATE.md'],
+    [templates, 'workspaces', 'light', 'CLAUDE.md'],
+  ];
+  for (const parts of files) {
+    const text = read(...parts).replace(/\s+/g, ' ').replace(/ ?> /g, ' ');
+    assert.match(text, /as precise and short as possible, with only what is necessary/, parts.at(-1));
+    assert.equal(/(?:under|at most|maximum) \d+ lines|\d+ lines (?:each|at most)/i.exec(text), null, `${parts.at(-1)} states no line limit`);
+  }
 });
 
 test('two ways to build and no mode to set: /implement by hand changes nothing in git, /autopilot does not stop to ask', () => {

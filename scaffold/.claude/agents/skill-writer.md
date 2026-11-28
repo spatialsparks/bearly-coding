@@ -39,8 +39,9 @@ One file, at the path your brief gives: `.claude/skills/<part>/SKILL.md`.
 - **For this project, not in general.** "Where it sits in the architecture" names this
   project's layers and paths. "The two verify tiers" says what of this part belongs in
   `{{VERIFY_FAST}}` and what only in `{{VERIFY_COMMAND}}`.
-- **Rules, not explanations**: what to do, and in half a line why. About 150 lines at most —
-  the skill is loaded whole whenever work touches the part.
+- **Rules, not explanations**: what to do, and in half a line why. No line limit, but as
+  precise and short as possible, with only what is necessary — the skill is loaded whole
+  whenever work touches the part.
 - **Every rule ends with the number of its source** in brackets, and Sources lists each page
   with the day you read it. A rule from the project's own files names the file.
 - **Nothing is guessed.** What you know from general practice but did not find on a page, or

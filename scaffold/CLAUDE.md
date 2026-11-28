@@ -2,8 +2,9 @@
 
 {{PROJECT_ONE_LINER}}
 
-This file is level 0. Keep it under 100 lines. If something here needs a paragraph, it belongs
-in `docs/` and gets one line here pointing at it.
+This file is level 0. It has no line limit: keep it as precise and short as possible, with only
+what is necessary. If something here needs a paragraph, it belongs in `docs/` and gets one line
+here pointing at it.
 
 ## Read these first, every session
 

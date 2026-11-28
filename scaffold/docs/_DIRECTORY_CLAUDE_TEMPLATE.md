@@ -1,8 +1,8 @@
 # Directory CLAUDE.md template
 
-Copy this into every source directory as `CLAUDE.md`. **Maximum 40 lines.** Claude Code
-attaches the whole file to every file read in that directory, which is exactly when it is
-useful and exactly why it must be short: a line here is paid for on every read.
+Copy this into every source directory as `CLAUDE.md`. It has no line limit: keep it as precise
+and short as possible, with only what is necessary. Claude Code attaches the whole file to every
+file read in that directory, which is exactly when it is useful.
 
 Purpose, public API, invariants, test command, gotchas. Nothing else — no tutorials, no
 history, no restating the prime directives.

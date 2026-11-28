@@ -11,7 +11,8 @@ status: on-track # on-track | blocked | needs-owner
 > asking anything. It is **rewritten**, never appended to: the work is on the board, the history
 > is in `docs/board/log/`. Only whoever is building writes it (directive 29).
 >
-> Keep it under 100 lines. Prune "Last decisions" to five and fold anything older into an ADR.
+> It has no line limit: keep it as precise and short as possible, with only what is necessary.
+> Prune "Last decisions" to five and fold anything older into an ADR.
 
 ## Where we are
 

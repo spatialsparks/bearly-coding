@@ -124,7 +124,8 @@ you will add. Apply these rules:
   template has and this project lacks is appended after the highest one. Agents, commands and
   docs/CODING_STANDARDS.md use this project's numbers.
 - **The context files say it once each**: CLAUDE.md — the read-first list, the short form, the
-  repo map, the commands, read-X-when-Y and the definition of done — within its line budget;
+  repo map, the commands, read-X-when-Y and the definition of done — as precise and short as
+  possible;
   the hand-off in docs/PROGRESS.md; the table of commands in README.md; .claude/README.md.
 - **.claude/settings.json**: add the template's entries this project lacks — allow, deny, the
   hook, the model, the env entries — and keep every existing entry and every deny. An allow
@@ -145,8 +146,10 @@ you will add. Apply these rules:
   project decided differently and every exclusion you added. Amend nothing in an existing ADR
   beyond a "see ADR-NNNN" line where one now says something that is no longer so.
 - **No test is deleted, skipped or changed, and no source is touched.**
-- **Budgets hold.** Every file with a line budget stays within it; if one would not, say which
-  and what you would move out.
+- **No line limits.** The template has none: drop every line budget this project's context
+  files and docs/AGENT_WORKFLOW.md still state, and keep each file as precise and short as
+  possible, with only what is necessary. Where one says something twice or holds what belongs
+  in docs/, say what you would move out.
 
 Then stop and wait for my yes. Change the list when I ask.
 

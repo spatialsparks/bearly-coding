@@ -44,8 +44,9 @@ not rewritten to meet it; that would be a card.
 - Reading narrowly (ADR-0008) matters more. Its rule against printing a whole file of more than
   about 300 lines stays: it limits what an agent reads, not how long a file may be.
 
-The line budgets of the context files — the root `CLAUDE.md`, a directory's `CLAUDE.md` — also
-stay. Those are read whole, so their length is what they cost.
+The context files — the root `CLAUDE.md`, a directory's `CLAUDE.md`, `docs/PROGRESS.md`, the
+board, the glossary — have no line limit either (changed 2026-11-28). They are read whole, so
+each is kept as precise and short as possible, with only what is necessary.
 
 ## Alternatives considered
 

@@ -2,8 +2,9 @@
 
 A light workspace for tool or content work — 3D assets, data work, scripts — made by
 `/bearly-coding:new` on {{DATE}}. Not a product: no board, no sprints, no architecture rules, no
-verify gates. Git keeps the history, and GitHub, if it is used at all, only stores it. Keep this
-file under 60 lines: it is read at the start of every session here.
+verify gates. Git keeps the history, and GitHub, if it is used at all, only stores it. This file
+has no line limit, but keep it as precise and short as possible, with only what is necessary:
+it is read at the start of every session here.
 
 ## What this is
 

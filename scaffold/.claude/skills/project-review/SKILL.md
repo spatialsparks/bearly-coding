@@ -45,8 +45,7 @@ causes is real: then say so plainly, as a candidate.
      fail if it broke. Tests that recompute their own expectation, or reach into internals and
      break on every restructuring. The slowest tests in `{{VERIFY_COMMAND}}`. End-to-end tests
      beyond one path per sprint.
-   - **Documents.** A directory `CLAUDE.md` over its 40 lines, or describing code that has
-     moved. An entry of docs/FEATURES.md that is no longer true. A glossary term the code does
+   - **Documents.** A directory `CLAUDE.md` describing code that has moved. An entry of docs/FEATURES.md that is no longer true. A glossary term the code does
      not use, and a word the code uses for which the glossary has another. An ADR the code
      contradicts. Known debt that is gone.
 

@@ -22,19 +22,19 @@ sprint lead is a sub-agent with a fresh context that carries one sprint from the
 
 Read down this list and **stop when you know enough**. Never scan the repository.
 
-| Level | File | Budget |
+| Level | File | Read |
 | --- | --- | --- |
-| L0 | `CLAUDE.md` | 100 lines |
-| L1 | `docs/PROGRESS.md`, `docs/board/BOARD.md`, `docs/GLOSSARY.md` | 100 lines each; the board's Done table keeps 20 rows |
-| L2 | the `CLAUDE.md` of the directory you are in | 40 lines |
+| L0 | `CLAUDE.md` | every session |
+| L1 | `docs/PROGRESS.md`, `docs/board/BOARD.md`, `docs/GLOSSARY.md` | every session; the board's Done table keeps 20 rows |
+| L2 | the `CLAUDE.md` of the directory you are in | with every file read there |
 | L3 | your sprint's `sprint.md`, then your story | on demand |
 | L4 | `docs/ARCHITECTURE.md`, `docs/FEATURES.md`, `docs/STORAGE_FORMAT.md`, `docs/adr/`, `docs/PRIME_DIRECTIVES.md` | on demand |
 
 If you find yourself reading L4 for an ordinary story, the story is underspecified — fix the
 story, not just your own understanding.
 
-A directory's `CLAUDE.md` is held to 40 lines because Claude Code attaches the whole file to
-every file read in that directory: a line there is paid for on every read.
+No context file has a line limit. Write each one as precise and short as possible, with only
+what is necessary: L0 to L2 are read whole, so every line is paid for on every read.
 
 `docs/CODING_STANDARDS.md` is on no level: reviewers read it, implementers do not (ADR-0011).
 

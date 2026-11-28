@@ -76,7 +76,8 @@ description: <what the skill covers and when to use it, in a sentence or two>
 
 The `description` is what Claude Code reads to decide whether to load the skill, so it names
 the part and the work it applies to. A skill is loaded whole whenever work touches its part:
-keep it to about 150 lines, rules rather than explanations (ADR-0008).
+it has no line limit, but keep it as precise and short as possible, with only what is
+necessary — rules rather than explanations (ADR-0008).
 
 ## Having skills written
 

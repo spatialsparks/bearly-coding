@@ -1,6 +1,6 @@
 // The files view: the context files grouped by what they are for, and one of them rendered.
 
-import { budgetOf, fileRoute, groups, hints, resolver } from './files.mjs';
+import { fileRoute, groups, hints, resolver } from './files.mjs';
 import { html, raw } from './html.mjs';
 import { renderMarkdown } from './markdown.mjs';
 
@@ -36,17 +36,15 @@ function treeGroup(group, model, ui, current) {
 
 function treeItem(item, model, current) {
   const file = model.byPath.get(item.path);
-  const budget = budgetOf(item.path, model.budgets);
   return html`<a class="file${item.path === current ? ' current' : ''}" href="${fileRoute(item.path)}" data-search="${item.path.toLowerCase()}" title="${item.path}">
     <span class="label">${item.label}</span>
-    ${budget !== null ? html`<span class="badge${file.lines > budget ? ' warning' : ''}">${file.lines}/${budget}</span>` : ''}
     ${file.slots ? html`<span class="badge warning">${file.slots} unfilled</span>` : ''}
   </a>`;
 }
 
 function overview(model) {
   const flagged = model.files
-    .map((file) => ({ file, found: hints(file, model.budgets) }))
+    .map((file) => ({ file, found: hints(file) }))
     .filter((entry) => entry.found.length);
   return html`<div class="doc-head"><h1>Context files</h1></div>
     <p class="note">${model.files.length} files. Pick one on the left; ids, ADRs, directives and paths inside them are links.</p>
@@ -55,7 +53,7 @@ function overview(model) {
       ? html`<ul class="hints">${flagged.map(
           ({ file, found }) => html`<li><a href="${fileRoute(file.path)}">${file.path}</a> — ${found.map((hint) => hint.text).join('; ')}</li>`,
         )}</ul>`
-      : html`<p class="note">Nothing is over its budget, and no placeholder is left unfilled.</p>`}`;
+      : html`<p class="note">No placeholder is left unfilled.</p>`}`;
 }
 
 function reader(model, ui, path, text) {
@@ -64,7 +62,7 @@ function reader(model, ui, path, text) {
     return html`<div class="doc-head"><h1>${path}</h1></div>
       <p class="note">This is not a file the inspector serves, or it has just been removed.</p>`;
   }
-  const found = hints(file, model.budgets);
+  const found = hints(file);
   const markdown = path.endsWith('.md');
   const rendered = markdown && !ui.raw ? renderMarkdown(text, { resolve: resolver(model.index, path) }) : null;
   const data = Object.entries(rendered?.data ?? {});
